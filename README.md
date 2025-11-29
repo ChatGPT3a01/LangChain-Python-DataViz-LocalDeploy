@@ -2,11 +2,11 @@
 
 > LangChain + 實戰專案完整教學
 
-## 線上課程網站
+## 📘 教學簡報入口
 
-**課程簡報網址：** https://chatgpt3a01.github.io/LangChain-Python-DataViz-LocalDeploy/
+本專案搭配完整簡報教材，請由此進入：
 
----
+👉 **[Python 資料視覺化 x LangChain｜簡報入口](https://chatgpt3a01.github.io/LangChain-Python-DataViz-LocalDeploy/簡報/index.html)**
 
 ## 下載專案
 
