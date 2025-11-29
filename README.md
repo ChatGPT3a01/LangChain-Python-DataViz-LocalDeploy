@@ -1,388 +1,245 @@
-# 📊 Day 3：資料視覺化與報表應用
+# Python 資料視覺化與 AI 專案開發
 
-## 📁 資料夾結構
+> LangChain + 實戰專案完整教學
 
-```
-Day3_資料視覺化專案/
-├── 📘 README.md                          # 本文件（專案總覽）
-├── 📖 Day3專案完整操作指南.md             # 詳細操作步驟教學
-├── 📖 Jupyter_Lab使用指南.md             # Jupyter Lab 使用教學
-│
-├── 📂 電商銷售數據分析專案/               # 專案一
-│   ├── main.py                          # 主程式
-│   ├── requirements.txt                 # 依賴套件
-│   ├── README.md                        # 專案說明
-│   └── output/                          # 輸出資料夾（執行後產生）
-│       ├── 銷售儀表板.png
-│       ├── 銷售數據.csv
-│       └── 銷售分析報告.pdf
-│
-└── 📂 COVID-19疫情數據視覺化專案/         # 專案二
-    ├── main.py                          # 主程式
-    ├── generate_local_data.py           # 數據生成腳本
-    ├── requirements.txt                 # 依賴套件
-    ├── README.md                        # 專案說明
-    ├── data/                            # 本地數據資料夾
-    │   └── covid19_confirmed_global.csv # 本地數據（已內建）
-    └── output/                          # 輸出資料夾（執行後產生）
-        ├── COVID-19疫情分析圖表.png
-        ├── 累計確診數據.csv
-        ├── 每日新增數據.csv
-        └── COVID-19疫情分析報告.pdf
-```
+## 線上課程網站
+
+**課程簡報網址：** https://chatgpt3a01.github.io/Day3-Python-AI-Data-Visualization/
 
 ---
 
-## 🎯 專案概述
+## 下載專案
 
-本課程包含兩個完整的 Python 資料視覺化專案，從基礎到進階，循序漸進學習。
+### 方式一：直接下載 ZIP
 
-### 專案一：電商銷售數據分析
-- **難度：** ⭐⭐☆☆☆（初級）
-- **特色：** 模擬數據、完全離線
-- **學習重點：** Matplotlib 基礎、儀表板設計、報表輸出
-- **數據：** 2026 年全年電商銷售數據（365 天）
+1. 點擊頁面上方的綠色 **Code** 按鈕
+2. 選擇 **Download ZIP**
+3. 解壓縮到你想要的資料夾
 
-### 專案二：COVID-19 疫情數據視覺化
-- **難度：** ⭐⭐⭐☆☆（中級）
-- **特色：** 真實數據、已內建本地數據、無需網路
-- **學習重點：** 數據清洗、時間序列分析、移動平均
-- **數據：** 2020-2023 真實疫情數據（1143 天）
-
----
-
-## 🚀 快速開始
-
-### 方式一：使用命令提示字元
+### 方式二：使用 Git Clone
 
 ```bash
-# 1. 進入 Day3 資料夾
-cd "D:\Python_快速掌握Python專案開發實作\netlify\Day3_資料視覺化專案"
+git clone https://github.com/ChatGPT3a01/Day3-Python-AI-Data-Visualization.git
+```
 
-# 2. 進入專案資料夾（選擇其一）
-cd "電商銷售數據分析專案"
-# 或
-cd "COVID-19疫情數據視覺化專案"
+---
 
-# 3. 建立虛擬環境
+## 快速開始
+
+### 1. 安裝 Python 環境
+
+確保你的電腦已安裝 Python 3.8 或以上版本：
+
+```bash
+python --version
+```
+
+### 2. 進入專案資料夾
+
+```bash
+cd Day3-Python-AI-Data-Visualization
+```
+
+### 3. 建立虛擬環境（建議）
+
+```bash
 python -m venv venv
+```
 
-# 4. 啟動虛擬環境
+### 4. 啟動虛擬環境
+
+**Windows:**
+```bash
 venv\Scripts\activate
+```
 
-# 5. 安裝依賴套件
+**Mac/Linux:**
+```bash
+source venv/bin/activate
+```
+
+### 5. 安裝依賴套件
+
+進入任一專案資料夾，安裝所需套件：
+
+```bash
+cd 1_台灣餐廳美食分析專案
 pip install -r requirements.txt
+```
 
-# 6. 執行程式
+### 6. 執行專案
+
+```bash
 python main.py
 ```
 
 ---
 
-### 方式二：使用 Jupyter Lab（推薦）
+## 課程內容
+
+### 環境建置 (Unit 0)
+- Unit 0-1: Jupyter Lab 環境建置
+- Unit 0-2: Jupyter Lab 中文化設定
+
+### LangChain 基礎 (Unit 1-4)
+| 單元 | 主題 | 資料夾 |
+|------|------|--------|
+| Unit 1 | LangChain 環境建置 | `0_LangChain基礎實作/Unit1_環境建置` |
+| Unit 2 | 提示詞工程 | `0_LangChain基礎實作/Unit2_提示詞工程` |
+| Unit 3 | 輸出解析器 | `0_LangChain基礎實作/Unit3_輸出解析器` |
+| Unit 4 | 鏈式調用 | `0_LangChain基礎實作/Unit4_鏈式調用` |
+
+### AI 專案實戰 (Unit 5-10)
+| 單元 | 專案名稱 | 資料夾 |
+|------|----------|--------|
+| Unit 5 | 台灣餐廳美食分析專案 | `1_台灣餐廳美食分析專案` |
+| Unit 6 | 台灣氣象數據視覺化專案 | `2_台灣氣象數據視覺化專案` |
+| Unit 7 | 電商銷售數據分析專案 | `3_電商銷售數據分析專案` |
+| Unit 8 | 社群媒體數據分析專案 | `4_社群媒體數據分析專案` |
+| Unit 9 | COVID-19 疫情數據視覺化專案 | `5_COVID-19疫情數據視覺化專案` |
+| Unit 10 | 台灣股市數據分析專案 | `6_台灣股市數據分析專案` |
+
+---
+
+## 資料夾結構
+
+```
+Day3-Python-AI-Data-Visualization/
+├── index.html                     # 網站首頁
+├── 簡報/                          # 所有 HTML 簡報
+│   ├── index.html                 # 簡報索引頁
+│   ├── unit0-1_jupyter_setup.html
+│   ├── unit0-2_jupyter_chinese.html
+│   ├── unit1_langchain_setup.html
+│   ├── unit2_prompt_engineering.html
+│   ├── unit3_output_parsers.html
+│   ├── unit4_chains.html
+│   ├── unit5_restaurant_ai.html
+│   ├── unit6_weather_ai.html
+│   ├── unit7_ecommerce_ai.html
+│   ├── unit8_social_media_ai.html
+│   ├── unit9_covid_ai.html
+│   └── unit10_stock_ai.html
+├── 0_LangChain基礎實作/            # LangChain 基礎程式碼
+│   ├── Unit1_環境建置/
+│   ├── Unit2_提示詞工程/
+│   ├── Unit3_輸出解析器/
+│   └── Unit4_鏈式調用/
+├── 1_台灣餐廳美食分析專案/
+├── 2_台灣氣象數據視覺化專案/
+├── 3_電商銷售數據分析專案/
+├── 4_社群媒體數據分析專案/
+├── 5_COVID-19疫情數據視覺化專案/
+└── 6_台灣股市數據分析專案/
+```
+
+---
+
+## 自行部署網站
+
+如果你想 Fork 這個專案並自行部署：
+
+### 步驟 1: Fork 專案
+
+點擊頁面右上角的 **Fork** 按鈕
+
+### 步驟 2: 啟用 GitHub Pages
+
+1. 進入你 Fork 的 Repository
+2. 點擊 **Settings**（設定）
+3. 左側選單找到 **Pages**
+4. 在 **Source** 選擇 **Deploy from a branch**
+5. 在 **Branch** 選擇 `main`，路徑選擇 `/ (root)`
+6. 點擊 **Save**
+
+### 步驟 3: 等待部署完成
+
+約 1-2 分鐘後，你的網站就會上線：
+
+```
+https://你的GitHub帳號.github.io/Day3-Python-AI-Data-Visualization/
+```
+
+---
+
+## 使用 Jupyter Lab 學習
+
+### 安裝 Jupyter Lab
 
 ```bash
-# 1. 安裝 Jupyter Lab（全域安裝一次即可）
 pip install jupyterlab
+```
 
-# 2. 進入 Day3 資料夾
-cd "D:\Python_快速掌握Python專案開發實作\netlify\Day3_資料視覺化專案"
+### 啟動 Jupyter Lab
 
-# 3. 啟動 Jupyter Lab
+```bash
+cd Day3-Python-AI-Data-Visualization
 jupyter lab
 ```
 
-**然後在 Jupyter Lab 中：**
-- 使用**終端機**執行 Python 腳本
-- 或使用 **Notebook** 互動式執行（推薦學習使用）
+### 在 Jupyter Lab 中執行專案
+
+1. 開啟 Terminal 終端機
+2. 進入專案資料夾
+3. 執行 `python main.py`
 
 ---
 
-## 📖 教學文件說明
+## 系統需求
 
-### 1. Day3專案完整操作指南.md
-**內容：**
-- ✅ 環境準備完整步驟
-- ✅ 兩個專案的詳細操作流程
-- ✅ 圖表解讀說明
-- ✅ 常見問題排除（10+ 個問題）
-- ✅ 進階練習題
-- ✅ 學習檢查清單
-
-**適合：** 第一次執行專案的新手
+- **Python:** 3.8 或以上版本
+- **記憶體:** 至少 4GB RAM
+- **硬碟空間:** 約 500MB（含套件）
+- **網路:** 不需要（專案可完全離線執行）
 
 ---
 
-### 2. Jupyter_Lab使用指南.md
-**內容：**
-- ✅ Jupyter Lab 安裝與啟動
-- ✅ 使用終端機執行專案
-- ✅ 使用 Notebook 互動式學習
-- ✅ 快捷鍵和使用技巧
-- ✅ 兩種方法的比較
-
-**適合：** 想用 Jupyter Lab 學習的人
-
----
-
-### 3. 各專案的 README.md
-**內容：**
-- ✅ 專案功能介紹
-- ✅ 安裝步驟
-- ✅ 執行方式
-- ✅ 輸出說明
-- ✅ 進階使用
-
-**適合：** 快速查閱參考
-
----
-
-## 💡 學習路徑建議
-
-### 🔰 完全新手
+## 依賴套件
 
 ```
-第 1 步：閱讀「Day3專案完整操作指南.md」
-第 2 步：執行「電商銷售數據分析專案」
-第 3 步：理解程式碼和圖表
-第 4 步：嘗試修改參數
-第 5 步：執行「COVID-19疫情數據視覺化專案」
-```
-
-**預計時間：** 3-4 小時
-
----
-
-### 🎓 有 Python 基礎
-
-```
-第 1 步：直接執行兩個專案
-第 2 步：閱讀程式碼註解
-第 3 步：嘗試進階練習
-第 4 步：使用 Jupyter Notebook 互動學習
-第 5 步：建立自己的視覺化專案
-```
-
-**預計時間：** 2-3 小時
-
----
-
-### 👨‍🏫 教師/講師
-
-```
-第 1 步：使用 Jupyter Lab
-第 2 步：開啟 Notebook 版本（如有）
-第 3 步：一段一段執行，邊講解邊展示
-第 4 步：即時修改參數展示效果
-第 5 步：讓學生實作練習題
-```
-
-**建議：** 使用 Jupyter Notebook 進行教學，圖表會直接顯示在畫面上，不會被視窗遮住。
-
----
-
-## 🔥 特色功能
-
-### ✨ 電商銷售專案
-
-1. **四合一儀表板**
-   - 營收趨勢（含移動平均線）
-   - 月度訂單數排行
-   - 回購率分佈分析
-   - 新客戶與訂單相關性
-
-2. **詳細統計報告**
-   - 總營收、平均日營收
-   - 訂單數統計
-   - 客戶數據
-   - 回購率分析
-
-3. **多格式輸出**
-   - PNG 高解析度圖表（300 DPI）
-   - CSV 原始數據
-   - PDF 多頁報表
-
----
-
-### ✨ COVID-19 疫情專案
-
-1. **三種數據模式**
-   - ✅ 本地數據（預設，無需網路）
-   - 🌐 線上數據（可選）
-   - 🎲 模擬數據（備用）
-
-2. **完整時間序列分析**
-   - 累計確診數趨勢
-   - 每日新增確診數
-   - 7 日移動平均
-   - 國家排行比較
-
-3. **10 國數據**
-   - 台灣、美國、英國、日本、南韓
-   - 德國、法國、義大利、西班牙、印度
-
----
-
-## ⚙️ 系統需求
-
-### 軟體需求
-- Python 3.8 或以上版本
-- pip 套件管理工具
-- （選用）Jupyter Lab
-
-### 硬體需求
-- 記憶體：至少 4GB RAM
-- 硬碟空間：至少 500MB（含套件）
-- 處理器：一般等級即可
-
-### 網路需求
-- ❌ **不需要網路連線！**
-- 兩個專案都可以完全離線執行
-
----
-
-## 📦 依賴套件
-
-兩個專案都使用相同的核心套件：
-
-```
-matplotlib==3.8.2    # 資料視覺化
-numpy==1.26.2        # 數值運算
-pandas==2.1.4        # 資料處理
-seaborn==0.13.0      # 進階視覺化
-requests==2.31.0     # 網路請求（僅 COVID-19 專案）
+matplotlib>=3.8.0
+numpy>=1.26.0
+pandas>=2.1.0
+seaborn>=0.13.0
+requests>=2.31.0
+langchain>=0.1.0
+langchain-openai>=0.0.5
+python-dotenv>=1.0.0
 ```
 
 ---
 
-## 🎨 視覺化技能
+## 學習路徑建議
 
-完成這兩個專案後，你將學會：
+### 完全新手
+1. 閱讀課程簡報 Unit 0（環境建置）
+2. 設定好 Python 和 Jupyter Lab 環境
+3. 從 Unit 1 開始學習 LangChain 基礎
+4. 逐步完成 Unit 5-10 的專案實作
 
-### 基礎技能
-- ✅ Matplotlib 物件導向介面
-- ✅ Figure 與 Axes 的概念
-- ✅ 基礎圖表類型（折線圖、長條圖、散佈圖、直方圖）
-- ✅ 圖表美化（標題、標籤、圖例、網格）
-- ✅ 中文字型設定
-
-### 進階技能
-- ✅ 多子圖佈局（Subplots）
-- ✅ 雙軸圖表（Twin Axes）
-- ✅ 移動平均計算
-- ✅ 時間序列視覺化
-- ✅ 熱力圖與相關性分析
-- ✅ 顏色映射與色條
-
-### 實務技能
-- ✅ 資料清洗與轉置
-- ✅ DataFrame 操作
-- ✅ 數據統計分析
-- ✅ 高解析度圖表匯出
-- ✅ PDF 報表製作
-- ✅ CSV 數據匯出
+### 有 Python 基礎
+1. 快速瀏覽 Unit 1-4 的簡報
+2. 直接執行專案程式碼
+3. 閱讀程式碼註解理解實作方式
+4. 嘗試修改和擴展專案功能
 
 ---
 
-## 🐛 常見問題快速索引
+## 課程資源
 
-| 問題 | 解決方案 | 參考文件 |
-|------|----------|----------|
-| Python 版本太舊 | 下載最新版 Python | 操作指南 Q1 |
-| 套件安裝失敗 | 使用國內鏡像 | 操作指南 Q2 |
-| 中文亂碼 | 設定字型 | 操作指南 Q3 |
-| 虛擬環境無法啟動 | 修改執行政策 | 操作指南 Q6 |
-| Jupyter Lab 無法啟動 | 重新安裝 | Jupyter 指南 Q1 |
-| 圖表無法顯示 | 使用 %matplotlib inline | Jupyter 指南 Q3 |
-| 本地數據遺失 | 執行生成腳本 | 操作指南 Q4 |
+- **Facebook:** https://www.facebook.com/
+- **YouTube:** https://www.youtube.com/@Liang-yt02
+- **3A 社團:** https://www.facebook.com/groups/2754139931432955
 
 ---
 
-## 📈 學習成果檢查
+## 授權
 
-完成專案後，確認你能夠：
-
-### 基礎能力
-- [ ] 建立和使用虛擬環境
-- [ ] 安裝和管理 Python 套件
-- [ ] 執行 Python 腳本
-- [ ] 讀取和理解程式碼註解
-
-### 視覺化能力
-- [ ] 使用 Matplotlib 繪製基礎圖表
-- [ ] 設定圖表標題、標籤、圖例
-- [ ] 建立多子圖佈局
-- [ ] 匯出高解析度圖表
-
-### 數據處理能力
-- [ ] 使用 Pandas 處理數據
-- [ ] 計算統計指標
-- [ ] 進行時間序列分析
-- [ ] 匯出 CSV 數據
-
-### 問題解決能力
-- [ ] 排除常見錯誤
-- [ ] 查詢官方文檔
-- [ ] 修改程式碼參數
-- [ ] 獨立完成簡單的視覺化任務
+本專案為教學用途，歡迎學習使用。
 
 ---
 
-## 🎓 延伸學習
-
-### 推薦資源
-
-**官方文檔：**
-- [Matplotlib 官方教學](https://matplotlib.org/stable/tutorials/index.html)
-- [Pandas 視覺化指南](https://pandas.pydata.org/docs/user_guide/visualization.html)
-- [Seaborn 教學](https://seaborn.pydata.org/tutorial.html)
-
-**進階主題：**
-- 互動式視覺化（Plotly, Bokeh）
-- 地理資訊視覺化（Folium, Geopandas）
-- 動態圖表（Matplotlib Animation）
-- 網頁儀表板（Dash, Streamlit）
-
----
-
-## 📞 需要幫助？
-
-### 學習順序
-1. 📖 閱讀「Day3專案完整操作指南.md」
-2. 💻 執行專案並觀察結果
-3. 🔍 遇到問題先查看「常見問題」章節
-4. 📚 查閱官方文檔
-5. 💡 嘗試進階練習
-
----
-
-## 🎉 開始學習！
-
-選擇你喜歡的方式開始：
-
-### 📝 傳統方式
-```bash
-cd "電商銷售數據分析專案"
-python -m venv venv
-venv\Scripts\activate
-pip install -r requirements.txt
-python main.py
-```
-
-### 🚀 Jupyter Lab 方式
-```bash
-pip install jupyterlab
-jupyter lab
-```
-
----
-
-**祝你學習愉快！** 📊✨
-
-如果有任何問題，請參考教學文件或專案的 README.md。
-
----
-
-**版本：** 1.0
-**更新日期：** 2025-11-25
-**課程：** Day 3 - 資料視覺化與報表應用
+**版本：** 2.0
+**更新日期：** 2025-11-30
+**課程：** Python 資料視覺化與 AI 專案開發
+**講師：** 曾慶良（阿亮老師）
