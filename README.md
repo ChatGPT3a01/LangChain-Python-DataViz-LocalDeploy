@@ -4,7 +4,7 @@
 
 ## 線上課程網站
 
-**課程簡報網址：** https://chatgpt3a01.github.io/Python-AI-Data-Visualization/
+**課程簡報網址：** https://chatgpt3a01.github.io/Python-LangChain-DataViz-LocalDeploy/
 
 ---
 
@@ -19,7 +19,7 @@
 ### 方式二：使用 Git Clone
 
 ```bash
-git clone https://github.com/ChatGPT3a01/Python-AI-Data-Visualization.git
+git clone https://github.com/ChatGPT3a01/Python-LangChain-DataViz-LocalDeploy.git
 ```
 
 ---
@@ -37,7 +37,7 @@ python --version
 ### 2. 進入專案資料夾
 
 ```bash
-cd Day3-Python-AI-Data-Visualization
+cd Day3-Python-LangChain-DataViz-LocalDeploy
 ```
 
 ### 3. 建立虛擬環境（建議）
@@ -104,7 +104,7 @@ python main.py
 ## 資料夾結構
 
 ```
-Day3-Python-AI-Data-Visualization/
+Day3-Python-LangChain-DataViz-LocalDeploy/
 ├── index.html                     # 網站首頁
 ├── 簡報/                          # 所有 HTML 簡報
 │   ├── index.html                 # 簡報索引頁
@@ -157,7 +157,7 @@ Day3-Python-AI-Data-Visualization/
 約 1-2 分鐘後，你的網站就會上線：
 
 ```
-https://你的GitHub帳號.github.io/Day3-Python-AI-Data-Visualization/
+https://你的GitHub帳號.github.io/Day3-Python-LangChain-DataViz-LocalDeploy/
 ```
 
 ---
@@ -173,7 +173,7 @@ pip install jupyterlab
 ### 啟動 Jupyter Lab
 
 ```bash
-cd Day3-Python-AI-Data-Visualization
+cd Day3-Python-LangChain-DataViz-LocalDeploy
 jupyter lab
 ```
 
