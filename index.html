@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python 資料視覺化與 AI 專案開發</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft JhengHei', 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 60px;
+            animation: fadeInDown 1s ease;
+        }
+
+        .header h1 {
+            font-size: 52px;
+            margin-bottom: 20px;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            font-weight: 800;
+        }
+
+        .header p {
+            font-size: 26px;
+            opacity: 0.95;
+            font-weight: 300;
+            letter-spacing: 1px;
+        }
+
+        .header .course-info {
+            margin-top: 25px;
+            font-size: 18px;
+            opacity: 0.85;
+            line-height: 1.8;
+        }
+
+        .main-section {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 30px;
+            padding: 45px;
+            margin-bottom: 50px;
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.35);
+            animation: fadeInUp 1s ease;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .main-section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 4px solid #667eea;
+        }
+
+        .section-icon {
+            font-size: 48px;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+        }
+
+        .section-info {
+            flex: 1;
+        }
+
+        .section-title {
+            font-size: 38px;
+            margin-bottom: 8px;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .section-subtitle {
+            font-size: 20px;
+            opacity: 0.75;
+            font-weight: 400;
+            color: #764ba2;
+        }
+
+        .section-description {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.08), rgba(118, 75, 162, 0.08));
+            padding: 20px 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border-left: 5px solid #667eea;
+            font-size: 16px;
+            line-height: 1.8;
+            color: #444;
+        }
+
+        .parts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .part-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 18px;
+            padding: 35px;
+            text-decoration: none;
+            color: white;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .part-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .part-card:hover::before {
+            opacity: 1;
+        }
+
+        .part-card:hover {
+            transform: translateY(-8px) scale(1.03);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.45);
+        }
+
+        .part-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .part-title {
+            font-size: 24px;
+            line-height: 1.6;
+            font-weight: 700;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .part-desc {
+            font-size: 16px;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+
+        .slides-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .projects-card {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 70px;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 25px;
+            backdrop-filter: blur(15px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .footer h3 {
+            font-size: 28px;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .footer p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+
+        .footer-link {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 14px 30px;
+            border-radius: 30px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            font-size: 16px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        }
+
+        .footer-link:hover {
+            background: rgba(255, 255, 255, 0.35);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.25);
+            text-decoration: none;
+        }
+
+        .progress-indicator {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            z-index: 10000;
+            transition: width 0.3s ease;
+        }
+
+        .project-list {
+            margin-top: 30px;
+        }
+
+        .project-item {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            border-radius: 15px;
+            padding: 20px 25px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            transition: all 0.3s ease;
+            border-left: 5px solid #667eea;
+        }
+
+        .project-item:hover {
+            transform: translateX(10px);
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.15), rgba(118, 75, 162, 0.15));
+        }
+
+        .project-item .icon {
+            font-size: 32px;
+        }
+
+        .project-item .info {
+            flex: 1;
+        }
+
+        .project-item .name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .project-item .desc {
+            font-size: 14px;
+            color: #666;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 32px;
+            }
+
+            .header p {
+                font-size: 18px;
+            }
+
+            .header .course-info {
+                font-size: 14px;
+            }
+
+            .main-section {
+                padding: 30px 25px;
+            }
+
+            .section-header {
+                flex-direction: column;
+                text-align: center;
+                gap: 10px;
+            }
+
+            .section-title {
+                font-size: 26px;
+            }
+
+            .section-subtitle {
+                font-size: 16px;
+            }
+
+            .parts-grid {
+                grid-template-columns: 1fr;
+                gap: 18px;
+            }
+
+            .part-card {
+                padding: 25px;
+            }
+
+            .part-icon {
+                font-size: 48px;
+            }
+
+            .part-title {
+                font-size: 20px;
+            }
+
+            .footer-links {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .project-item {
+                flex-direction: column;
+                text-align: center;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-indicator" id="progressBar"></div>
+
+    <div class="container">
+        <div class="header">
+            <h1>Python 資料視覺化與 AI 專案開發</h1>
+            <p>LangChain + 實戰專案完整教學</p>
+            <div class="course-info">
+                從環境建置到六大 AI 專案實作<br>
+                掌握 LangChain 框架與資料視覺化技術
+            </div>
+        </div>
+
+        <!-- 快速入口 -->
+        <div class="main-section">
+            <div class="section-header">
+                <div class="section-icon">🎯</div>
+                <div class="section-info">
+                    <h2 class="section-title">快速入口</h2>
+                    <p class="section-subtitle">Quick Access</p>
+                </div>
+            </div>
+            <div class="section-description">
+                選擇您想要瀏覽的內容：課程簡報包含完整的教學投影片，專案程式碼則提供所有實作範例。
+            </div>
+            <div class="parts-grid">
+                <a href="簡報/index.html" class="part-card slides-card">
+                    <span class="part-icon">📊</span>
+                    <div class="part-title">課程簡報</div>
+                    <div class="part-desc">12 個單元完整教學投影片</div>
+                </a>
+                <a href="https://github.com/ChatGPT3a01/Day3-Python-AI-Data-Visualization" class="part-card projects-card" id="github-link">
+                    <span class="part-icon">💻</span>
+                    <div class="part-title">專案程式碼</div>
+                    <div class="part-desc">GitHub Repository 下載</div>
+                </a>
+            </div>
+        </div>
+
+        <!-- 課程內容 -->
+        <div class="main-section">
+            <div class="section-header">
+                <div class="section-icon">📚</div>
+                <div class="section-info">
+                    <h2 class="section-title">課程內容</h2>
+                    <p class="section-subtitle">Course Content</p>
+                </div>
+            </div>
+            <div class="section-description">
+                本課程涵蓋 LangChain 基礎知識與六大 AI 實戰專案，帶你從零開始掌握 AI 應用開發。
+            </div>
+            <div class="project-list">
+                <div class="project-item">
+                    <div class="icon">🛠️</div>
+                    <div class="info">
+                        <div class="name">Unit 0: 環境建置</div>
+                        <div class="desc">Jupyter Lab 安裝與中文化設定</div>
+                    </div>
+                </div>
+                <div class="project-item">
+                    <div class="icon">🔗</div>
+                    <div class="info">
+                        <div class="name">Unit 1-4: LangChain 基礎</div>
+                        <div class="desc">環境設定、提示詞工程、輸出解析器、鏈式調用</div>
+                    </div>
+                </div>
+                <div class="project-item">
+                    <div class="icon">🍜</div>
+                    <div class="info">
+                        <div class="name">Unit 5: 台灣餐廳美食分析專案</div>
+                        <div class="desc">AI 分析餐廳評論與美食推薦</div>
+                    </div>
+                </div>
+                <div class="project-item">
+                    <div class="icon">🌤️</div>
+                    <div class="info">
+                        <div class="name">Unit 6: 台灣氣象數據視覺化專案</div>
+                        <div class="desc">氣象資料擷取與視覺化呈現</div>
+                    </div>
+                </div>
+                <div class="project-item">
+                    <div class="icon">🛒</div>
+                    <div class="info">
+                        <div class="name">Unit 7: 電商銷售數據分析專案</div>
+                        <div class="desc">銷售數據分析與商業洞察</div>
+                    </div>
+                </div>
+                <div class="project-item">
+                    <div class="icon">📱</div>
+                    <div class="info">
+                        <div class="name">Unit 8: 社群媒體數據分析專案</div>
+                        <div class="desc">社群數據爬取與情感分析</div>
+                    </div>
+                </div>
+                <div class="project-item">
+                    <div class="icon">🦠</div>
+                    <div class="info">
+                        <div class="name">Unit 9: COVID-19 疫情數據視覺化專案</div>
+                        <div class="desc">疫情數據追蹤與視覺化儀表板</div>
+                    </div>
+                </div>
+                <div class="project-item">
+                    <div class="icon">📈</div>
+                    <div class="info">
+                        <div class="name">Unit 10: 台灣股市數據分析專案</div>
+                        <div class="desc">股市資料分析與 AI 預測</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <h3>課程資源連結</h3>
+            <p>Course Resources & Community</p>
+            <div class="footer-links">
+                <a href="https://www.facebook.com/?locale=zh_TW" target="_blank" class="footer-link">Facebook</a>
+                <a href="https://www.youtube.com/@Liang-yt02" target="_blank" class="footer-link">YouTube</a>
+                <a href="https://www.facebook.com/groups/2754139931432955?locale=zh_TW" target="_blank" class="footer-link">3A 社團</a>
+            </div>
+            <p style="margin-top: 35px; opacity: 0.85; font-size: 15px;">© 2025 Python 資料視覺化與 AI 專案開發 | Made with 曾慶良(阿亮老師) ❤️</p>
+        </div>
+    </div>
+
+    <script>
+        // 滾動進度條
+        window.addEventListener('scroll', () => {
+            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (winScroll / height) * 100;
+            document.getElementById('progressBar').style.width = scrolled + '%';
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unit 9 - COVID-19 疫情 AI 分析</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft JhengHei', 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #55a3ff 0%, #003d82 100%);
+            min-height: 100vh;
+            overflow: hidden;
+            color: #333;
+        }
+        .nav-bar {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 30px;
+            z-index: 10000;
+        }
+        .nav-title { font-size: 20px; font-weight: 700; color: #fff; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); }
+        .nav-buttons { display: flex; gap: 12px; }
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            color: white;
+            padding: 6px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        .nav-btn:hover { background: rgba(255, 255, 255, 0.4); }
+        .slide-container { width: 100%; height: 100vh; padding-top: 60px; position: relative; }
+        .slide {
+            position: absolute;
+            top: 60px; left: 0;
+            width: 100%;
+            height: calc(100vh - 60px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+        .slide.active { display: flex; opacity: 1; }
+        .content-card {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 24px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+            padding: 50px;
+            max-width: 1400px;
+            width: 95%;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+        h1 { color: #003d82; font-size: 48px; margin-bottom: 20px; text-align: center; }
+        h2 { color: #003d82; font-size: 34px; margin-bottom: 25px; border-bottom: 3px solid #55a3ff; padding-bottom: 10px; }
+        h3 { color: #003d82; font-size: 22px; margin: 20px 0 12px 0; }
+        p, li { font-size: 18px; line-height: 1.8; color: #444; margin-bottom: 10px; }
+        code { background: #dfe6e9; padding: 3px 8px; border-radius: 6px; font-family: 'Consolas', monospace; color: #003d82; font-weight: 600; }
+        pre { background: #2d3436; color: #dfe6e9; padding: 20px; border-radius: 12px; overflow-x: auto; margin: 15px 0; font-size: 15px; line-height: 1.5; }
+        .box { padding: 18px; border-radius: 12px; margin: 18px 0; border-left: 5px solid; }
+        .info { background: #e3f2fd; border-color: #003d82; }
+        .success { background: #d4edda; border-color: #28a745; }
+        .highlight { background: linear-gradient(120deg, #003d82 0%, #55a3ff 100%); padding: 3px 8px; border-radius: 4px; color: white; font-weight: bold; }
+        .concept-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; margin-top: 20px; }
+        .concept-card { background: #e3f2fd; padding: 22px; border-radius: 15px; border: 2px solid #55a3ff; transition: all 0.3s; }
+        .concept-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,61,130,0.3); }
+        .nav-arrow {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 61, 130, 0.9);
+            color: white;
+            width: 50px; height: 50px;
+            border-radius: 50%;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 9000;
+            transition: all 0.3s;
+        }
+        .nav-arrow:hover { background: #003d82; transform: translateY(-50%) scale(1.1); }
+        .prev-arrow { left: 30px; }
+        .next-arrow { right: 30px; }
+        .indicators { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; z-index: 4000; padding: 10px 20px; background: rgba(0,0,0,0.3); border-radius: 30px; }
+        .dot { width: 12px; height: 12px; background: rgba(255,255,255,0.4); border-radius: 50%; cursor: pointer; transition: all 0.3s; }
+        .dot.active { background: #55a3ff; transform: scale(1.3); }
+    </style>
+</head>
+<body>
+    <div class="nav-bar">
+        <div class="nav-title">Unit 9 - COVID-19 疫情 AI 分析</div>
+        <div class="nav-buttons">
+            <button class="nav-btn" onclick="goToSlide(0)">首頁</button>
+            <button class="nav-btn" onclick="toggleFullscreen()">全螢幕</button>
+            <a href="https://www.facebook.com/?locale=zh_TW" target="_blank" class="nav-btn">FB</a>
+            <a href="https://www.youtube.com/@Liang-yt02" target="_blank" class="nav-btn">YT</a>
+        </div>
+    </div>
+
+    <div class="slide-container">
+        <!-- Slide 1: 封面 -->
+        <div class="slide active">
+            <div class="content-card" style="text-align: center;">
+                <p style="color: #003d82; font-size: 18px; letter-spacing: 3px;">PYTHON + LANGCHAIN 實戰專案</p>
+                <h1>Unit 9: COVID-19 疫情 AI 分析</h1>
+                <p style="font-size: 22px; color: #666; margin-top: 20px;">確診趨勢、疫苗覆蓋率與 AI 疫情洞察</p>
+                <div style="margin-top: 40px; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                    <span class="highlight">確診趨勢</span>
+                    <span class="highlight">疫苗分析</span>
+                    <span class="highlight">AI 預測</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 2: 數據載入 -->
+        <div class="slide">
+            <div class="content-card">
+                <h2>Step 1: 載入疫情數據</h2>
+                <pre><code>import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+
+# 載入確診數據
+cases_df = pd.read_csv('data/covid_cases.csv')
+cases_df['Date'] = pd.to_datetime(cases_df['Date'])
+
+# 載入疫苗數據
+vaccine_df = pd.read_csv('data/covid_vaccines.csv')
+vaccine_df['Date'] = pd.to_datetime(vaccine_df['Date'])
+
+# 計算7日移動平均
+cases_df['Cases_7MA'] = cases_df['New_Cases'].rolling(window=7).mean()
+
+print(f"時間範圍: {cases_df['Date'].min()} ~ {cases_df['Date'].max()}")
+print(f"總確診數: {cases_df['New_Cases'].sum():,}")
+print(f"疫苗覆蓋率: {vaccine_df['Coverage_Rate'].iloc[-1]:.1f}%")</code></pre>
+            </div>
+        </div>
+
+        <!-- Slide 3: 確診趨勢 -->
+        <div class="slide">
+            <div class="content-card">
+                <h2>Step 2: 確診趨勢視覺化</h2>
+                <pre><code>fig, axes = plt.subplots(2, 1, figsize=(14, 10))
+
+# 每日確診與移動平均
+axes[0].bar(cases_df['Date'], cases_df['New_Cases'],
+            alpha=0.4, color='#55a3ff', label='每日確診')
+axes[0].plot(cases_df['Date'], cases_df['Cases_7MA'],
+             color='#003d82', linewidth=2, label='7日移動平均')
+axes[0].set_title('COVID-19 每日確診趨勢', fontsize=16)
+axes[0].legend()
+axes[0].set_ylabel('確診人數')
+
+# 累計確診
+cases_df['Cumulative'] = cases_df['New_Cases'].cumsum()
+axes[1].fill_between(cases_df['Date'], cases_df['Cumulative'],
+                     alpha=0.5, color='#55a3ff')
+axes[1].plot(cases_df['Date'], cases_df['Cumulative'], color='#003d82')
+axes[1].set_title('累計確診人數', fontsize=16)
+axes[1].set_ylabel('累計人數')
+
+plt.tight_layout()
+plt.savefig('output/確診趨勢.png', dpi=300)</code></pre>
+            </div>
+        </div>
+
+        <!-- Slide 4: 疫苗分析 -->
+        <div class="slide">
+            <div class="content-card">
+                <h2>Step 3: 疫苗接種分析</h2>
+                <pre><code>fig, axes = plt.subplots(1, 2, figsize=(14, 6))
+
+# 疫苗覆蓋率趨勢
+axes[0].plot(vaccine_df['Date'], vaccine_df['First_Dose'],
+             label='第一劑', linewidth=2)
+axes[0].plot(vaccine_df['Date'], vaccine_df['Second_Dose'],
+             label='第二劑', linewidth=2)
+axes[0].plot(vaccine_df['Date'], vaccine_df['Booster'],
+             label='追加劑', linewidth=2)
+axes[0].set_title('疫苗接種覆蓋率趨勢')
+axes[0].set_ylabel('覆蓋率 (%)')
+axes[0].legend()
+axes[0].grid(True, alpha=0.3)
+
+# 疫苗品牌分布（圓餅圖）
+vaccine_brands = vaccine_df.groupby('Vaccine_Type')['Doses'].sum()
+axes[1].pie(vaccine_brands.values, labels=vaccine_brands.index,
+            autopct='%1.1f%%', colors=plt.cm.Blues(np.linspace(0.3, 0.9, len(vaccine_brands))))
+axes[1].set_title('疫苗品牌分布')
+
+plt.tight_layout()
+plt.savefig('output/疫苗分析.png', dpi=300)</code></pre>
+            </div>
+        </div>
+
+        <!-- Slide 5: AI 疫情分析 -->
+        <div class="slide">
+            <div class="content-card">
+                <h2>Step 4: AI 疫情趨勢分析</h2>
+                <pre><code>from langchain_openai import ChatOpenAI
+from langchain_core.prompts import ChatPromptTemplate
+
+llm = ChatOpenAI(model="gpt-3.5-turbo")
+
+# 準備統計摘要
+recent_cases = cases_df.tail(30)
+stats = {
+    "avg_daily": recent_cases['New_Cases'].mean(),
+    "max_daily": recent_cases['New_Cases'].max(),
+    "trend": "上升" if recent_cases['Cases_7MA'].iloc[-1] > recent_cases['Cases_7MA'].iloc[0] else "下降",
+    "vaccine_rate": vaccine_df['Coverage_Rate'].iloc[-1]
+}
+
+analysis_prompt = ChatPromptTemplate.from_messages([
+    ("system", "你是流行病學專家，請用繁體中文提供專業分析"),
+    ("human", """根據近30天疫情數據：
+- 日均確診：{avg_daily:.0f} 人
+- 單日最高：{max_daily:.0f} 人
+- 趨勢方向：{trend}
+- 疫苗覆蓋率：{vaccine_rate:.1f}%
+
+請分析：
+1. 當前疫情階段評估
+2. 與疫苗覆蓋率的關聯
+3. 未來趨勢預測
+4. 防疫建議""")
+])
+
+chain = analysis_prompt | llm
+response = chain.invoke(stats)
+print(response.content)</code></pre>
+            </div>
+        </div>
+
+        <!-- Slide 6: 區域分析 -->
+        <div class="slide">
+            <div class="content-card">
+                <h2>Step 5: 縣市疫情熱力圖</h2>
+                <pre><code>import seaborn as sns
+
+# 載入各縣市數據
+city_cases = pd.read_csv('data/covid_by_city.csv')
+
+# 建立月份x城市熱力圖
+pivot = city_cases.pivot_table(values='Cases', index='Month', columns='City')
+
+fig, ax = plt.subplots(figsize=(16, 8))
+sns.heatmap(pivot, annot=True, fmt='.0f', cmap='YlOrRd',
+            cbar_kws={'label': '確診人數'}, ax=ax)
+
+ax.set_title('各縣市月確診熱力圖', fontsize=16)
+ax.set_xlabel('縣市')
+ax.set_ylabel('月份')
+
+plt.tight_layout()
+plt.savefig('output/縣市熱力圖.png', dpi=300)</code></pre>
+                <div class="box info">
+                    熱力圖可快速識別疫情熱區與高峰時期
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7: AI 防疫報告 -->
+        <div class="slide">
+            <div class="content-card">
+                <h2>Step 6: AI 自動產生防疫報告</h2>
+                <pre><code>from langchain_core.output_parsers import StrOutputParser
+
+def generate_weekly_report(cases_df, vaccine_df):
+    """自動產生週報"""
+
+    # 本週數據
+    this_week = cases_df.tail(7)
+    last_week = cases_df.tail(14).head(7)
+
+    weekly_stats = {
+        "this_week_total": this_week['New_Cases'].sum(),
+        "last_week_total": last_week['New_Cases'].sum(),
+        "change_rate": (this_week['New_Cases'].sum() - last_week['New_Cases'].sum()) / last_week['New_Cases'].sum() * 100,
+        "vaccine_rate": vaccine_df['Coverage_Rate'].iloc[-1]
+    }
+
+    report_prompt = ChatPromptTemplate.from_template(
+        """產生一份簡潔的 COVID-19 週報摘要：
+
+本週確診：{this_week_total:,} 人
+上週確診：{last_week_total:,} 人
+週變化率：{change_rate:+.1f}%
+疫苗覆蓋率：{vaccine_rate:.1f}%
+
+請包含：摘要、風險評估、建議措施（各1-2句話）"""
+    )
+
+    chain = report_prompt | llm | StrOutputParser()
+    return chain.invoke(weekly_stats)
+
+report = generate_weekly_report(cases_df, vaccine_df)
+print(report)</code></pre>
+            </div>
+        </div>
+
+        <!-- Slide 8: 總結 -->
+        <div class="slide">
+            <div class="content-card">
+                <h2>Unit 9 專案總結</h2>
+                <div class="concept-grid">
+                    <div class="concept-card">
+                        <h3>確診趨勢分析</h3>
+                        <p>移動平均、累計曲線</p>
+                    </div>
+                    <div class="concept-card">
+                        <h3>疫苗覆蓋分析</h3>
+                        <p>接種率趨勢與品牌分布</p>
+                    </div>
+                    <div class="concept-card">
+                        <h3>區域熱力圖</h3>
+                        <p>縣市疫情視覺化</p>
+                    </div>
+                    <div class="concept-card">
+                        <h3>AI 週報產生</h3>
+                        <p>自動化疫情報告</p>
+                    </div>
+                </div>
+                <div class="box success" style="margin-top: 25px;">
+                    <strong>下一單元：</strong>台灣股市 AI 分析 - K線圖與投資策略
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <button class="nav-arrow prev-arrow" onclick="changeSlide(-1)">❮</button>
+    <button class="nav-arrow next-arrow" onclick="changeSlide(1)">❯</button>
+    <div class="indicators" id="indicators"></div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        function init() {
+            createIndicators();
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowLeft') changeSlide(-1);
+                if (e.key === 'ArrowRight') changeSlide(1);
+            });
+        }
+
+        function createIndicators() {
+            const container = document.getElementById('indicators');
+            for (let i = 0; i < totalSlides; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'dot' + (i === 0 ? ' active' : '');
+                dot.onclick = () => goToSlide(i);
+                container.appendChild(dot);
+            }
+        }
+
+        function showSlide(index) {
+            slides.forEach(s => s.classList.remove('active'));
+            slides[index].classList.add('active');
+            document.querySelectorAll('.dot').forEach((d, i) => {
+                d.classList.toggle('active', i === index);
+            });
+            currentSlide = index;
+        }
+
+        function changeSlide(dir) {
+            let newIndex = currentSlide + dir;
+            if (newIndex >= 0 && newIndex < totalSlides) showSlide(newIndex);
+        }
+
+        function goToSlide(index) { showSlide(index); }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+            else document.exitFullscreen();
+        }
+
+        init();
+    </script>
+</body>
+</html>
