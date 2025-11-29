@@ -4,7 +4,7 @@
 
 ## 線上課程網站
 
-**課程簡報網址：** https://chatgpt3a01.github.io/Day3-Python-AI-Data-Visualization/
+**課程簡報網址：** https://chatgpt3a01.github.io/Python-AI-Data-Visualization/
 
 ---
 
@@ -19,7 +19,7 @@
 ### 方式二：使用 Git Clone
 
 ```bash
-git clone https://github.com/ChatGPT3a01/Day3-Python-AI-Data-Visualization.git
+git clone https://github.com/ChatGPT3a01/Python-AI-Data-Visualization.git
 ```
 
 ---
