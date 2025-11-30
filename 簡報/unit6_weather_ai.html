@@ -129,24 +129,31 @@
         <div class="slide">
             <div class="content-card">
                 <h2>Step 1: 載入氣象數據</h2>
-                <pre><code>import pandas as pd
+                <pre><code># 匯入資料處理套件
+import pandas as pd
+# 匯入繪圖套件
 import matplotlib.pyplot as plt
+# 匯入統計視覺化套件
 import seaborn as sns
 
-# 載入數據
+# 載入氣象 CSV 數據
 df = pd.read_csv('data/all_cities_weather.csv')
+# 將日期欄位轉換為 datetime 格式
 df['Date'] = pd.to_datetime(df['Date'])
+# 從日期中提取月份
 df['Month'] = df['Date'].dt.month
 
-# 新增季節欄位
+# 定義季節判斷函數
 def get_season(month):
-    if month in [3,4,5]: return '春季'
-    elif month in [6,7,8]: return '夏季'
-    elif month in [9,10,11]: return '秋季'
-    else: return '冬季'
+    if month in [3,4,5]: return '春季'      # 3-5月為春季
+    elif month in [6,7,8]: return '夏季'    # 6-8月為夏季
+    elif month in [9,10,11]: return '秋季'  # 9-11月為秋季
+    else: return '冬季'                      # 12-2月為冬季
 
+# 使用 apply 將季節函數套用到每一列
 df['Season'] = df['Month'].apply(get_season)
 
+# 顯示數據時間範圍和包含的城市
 print(f"時間範圍: {df['Date'].min()} ~ {df['Date'].max()}")
 print(f"城市: {df['City'].unique()}")</code></pre>
             </div>
@@ -156,19 +163,25 @@ print(f"城市: {df['City'].unique()}")</code></pre>
         <div class="slide">
             <div class="content-card">
                 <h2>Step 2: 溫度趨勢視覺化</h2>
-                <pre><code>fig, ax = plt.subplots(figsize=(14, 6))
+                <pre><code># 建立畫布，設定大小為 14x6 英吋
+fig, ax = plt.subplots(figsize=(14, 6))
 
-# 繪製各城市溫度趨勢
+# 迴圈繪製每個城市的溫度趨勢線
 for city in df['City'].unique():
-    city_data = df[df['City'] == city]
+    city_data = df[df['City'] == city]  # 篩選該城市資料
+    # 繪製折線圖：X 軸為日期，Y 軸為平均溫度
     ax.plot(city_data['Date'], city_data['Temp_Avg'], label=city, linewidth=1.5)
 
+# 設定圖表標題和軸標籤
 ax.set_title('台灣各城市每日平均溫度趨勢', fontsize=16)
 ax.set_xlabel('日期')
 ax.set_ylabel('溫度 (°C)')
+# 顯示圖例（左上角）
 ax.legend(loc='upper left')
+# 顯示網格線（透明度 30%）
 ax.grid(True, alpha=0.3)
 
+# 自動調整版面並儲存圖表
 plt.tight_layout()
 plt.savefig('output/溫度趨勢.png', dpi=300)</code></pre>
             </div>
@@ -178,19 +191,28 @@ plt.savefig('output/溫度趨勢.png', dpi=300)</code></pre>
         <div class="slide">
             <div class="content-card">
                 <h2>Step 3: 熱力圖分析</h2>
-                <pre><code>import seaborn as sns
+                <pre><code># 匯入 seaborn 統計視覺化套件
+import seaborn as sns
 
-# 建立月份 x 城市的溫度熱力圖
+# 建立樞紐表：以月份為列、城市為欄，計算平均溫度
 temp_pivot = df.groupby(['Month', 'City'])['Temp_Avg'].mean().unstack()
 
+# 建立畫布
 fig, ax = plt.subplots(figsize=(12, 8))
-sns.heatmap(temp_pivot, annot=True, fmt='.1f', cmap='RdYlBu_r',
-            cbar_kws={'label': '溫度 (°C)'}, ax=ax)
+# 繪製熱力圖
+sns.heatmap(temp_pivot,
+            annot=True,        # 顯示數值標籤
+            fmt='.1f',         # 數值格式：小數點後1位
+            cmap='RdYlBu_r',   # 色彩映射：紅黃藍反轉（熱=紅，冷=藍）
+            cbar_kws={'label': '溫度 (°C)'},  # 色條標籤
+            ax=ax)
 
+# 設定標題和軸標籤
 ax.set_title('各城市月平均溫度熱力圖', fontsize=16)
 ax.set_xlabel('城市')
 ax.set_ylabel('月份')
 
+# 儲存圖表
 plt.tight_layout()
 plt.savefig('output/溫度熱力圖.png', dpi=300)</code></pre>
                 <div class="box info">
@@ -203,18 +225,22 @@ plt.savefig('output/溫度熱力圖.png', dpi=300)</code></pre>
         <div class="slide">
             <div class="content-card">
                 <h2>Step 4: AI 氣象分析</h2>
-                <pre><code>from langchain_openai import ChatOpenAI
+                <pre><code># 匯入 LangChain OpenAI 模組
+from langchain_openai import ChatOpenAI
+# 匯入提示模板類別
 from langchain_core.prompts import ChatPromptTemplate
 
+# 初始化語言模型
 llm = ChatOpenAI(model="gpt-3.5-turbo")
 
-# 準備統計摘要
+# 依城市分組計算統計數據
 stats = df.groupby('City').agg({
-    'Temp_Avg': ['mean', 'max', 'min'],
-    'Rainfall': 'sum',
-    'Humidity': 'mean'
-}).round(1)
+    'Temp_Avg': ['mean', 'max', 'min'],  # 平均、最高、最低溫度
+    'Rainfall': 'sum',                    # 總降雨量
+    'Humidity': 'mean'                    # 平均濕度
+}).round(1)  # 四捨五入到小數點後1位
 
+# 建立氣象分析提示模板
 weather_prompt = ChatPromptTemplate.from_messages([
     ("system", "你是氣象分析專家，請用繁體中文分析"),
     ("human", """根據以下台灣氣象統計數據：
@@ -226,8 +252,10 @@ weather_prompt = ChatPromptTemplate.from_messages([
 3. 降雨趨勢觀察""")
 ])
 
+# 使用 LCEL 串接並執行
 chain = weather_prompt | llm
 response = chain.invoke({"stats": stats.to_string()})
+# 輸出 AI 分析結果
 print(response.content)</code></pre>
             </div>
         </div>
@@ -236,28 +264,34 @@ print(response.content)</code></pre>
         <div class="slide">
             <div class="content-card">
                 <h2>Step 5: AI 天氣建議系統</h2>
-                <pre><code>from langchain_core.output_parsers import JsonOutputParser
+                <pre><code># 匯入 JSON 輸出解析器
+from langchain_core.output_parsers import JsonOutputParser
 
-# 建立天氣建議模板
+# 建立天氣建議提示模板（指定 JSON 輸出格式）
 advice_prompt = ChatPromptTemplate.from_messages([
     ("system", """你是天氣建議專家。根據天氣數據提供建議。
 輸出 JSON：{{"city": "城市", "activity": "建議活動", "warning": "注意事項"}}"""),
     ("human", "城市：{city}\n平均溫度：{temp}°C\n降雨機率：{rain}%\n濕度：{humidity}%")
 ])
 
+# 初始化 JSON 解析器
 parser = JsonOutputParser()
+# 串接完整鏈：提示模板 → 語言模型 → JSON 解析
 advice_chain = advice_prompt | llm | parser
 
-# 取得特定城市最新數據
+# 取得台北最新一筆資料（iloc[-1] 表示最後一列）
 taipei_latest = df[df['City'] == '台北'].iloc[-1]
 
+# 執行 AI 建議鏈
 result = advice_chain.invoke({
     "city": "台北",
     "temp": taipei_latest['Temp_Avg'],
+    # 根據降雨量判斷降雨機率
     "rain": 30 if taipei_latest['Rainfall'] > 0 else 10,
     "humidity": taipei_latest['Humidity']
 })
 
+# 輸出 AI 建議結果
 print(f"建議活動：{result['activity']}")
 print(f"注意事項：{result['warning']}")</code></pre>
             </div>
@@ -268,15 +302,21 @@ print(f"注意事項：{result['warning']}")</code></pre>
             <div class="content-card">
                 <h2>Step 6: AI 季節分析報告</h2>
                 <pre><code>def generate_seasonal_report(df, city):
-    """產生城市季節分析報告"""
+    """
+    產生城市季節分析報告
+    參數：df=資料框, city=目標城市名稱
+    """
+    # 篩選指定城市的資料
     city_data = df[df['City'] == city]
 
+    # 依季節分組計算統計數據
     seasonal_stats = city_data.groupby('Season').agg({
-        'Temp_Avg': 'mean',
-        'Rainfall': 'sum',
-        'Humidity': 'mean'
+        'Temp_Avg': 'mean',   # 平均溫度
+        'Rainfall': 'sum',     # 總降雨量
+        'Humidity': 'mean'     # 平均濕度
     }).round(1)
 
+    # 建立報告生成提示模板
     report_prompt = ChatPromptTemplate.from_template(
         """分析 {city} 的四季氣候數據：
 {stats}
@@ -284,10 +324,12 @@ print(f"注意事項：{result['warning']}")</code></pre>
 請產生一份簡潔的季節旅遊指南（每季 2-3 句話）"""
     )
 
+    # 串接鏈並使用字串輸出解析器
     chain = report_prompt | llm | StrOutputParser()
+    # 執行並回傳結果
     return chain.invoke({"city": city, "stats": seasonal_stats.to_string()})
 
-# 產生台北季節報告
+# 呼叫函數產生台北季節報告
 report = generate_seasonal_report(df, "台北")
 print(report)</code></pre>
             </div>

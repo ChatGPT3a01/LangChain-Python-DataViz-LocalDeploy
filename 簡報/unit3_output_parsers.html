@@ -159,19 +159,23 @@
             <div class="content-card">
                 <h2>基礎：StrOutputParser</h2>
                 <p>最簡單的解析器，直接取出 AI 回覆的文字內容：</p>
-                <pre><code>from langchain_openai import ChatOpenAI
+                <pre><code># 匯入 OpenAI 聊天模型
+from langchain_openai import ChatOpenAI
+# 匯入字串輸出解析器
 from langchain_core.output_parsers import StrOutputParser
 
+# 建立 ChatOpenAI 實例，使用 gpt-3.5-turbo 模型
 llm = ChatOpenAI(model="gpt-3.5-turbo")
+# 建立字串解析器實例（將 AIMessage 轉換為純字串）
 parser = StrOutputParser()
 
-# 建立 Chain
+# 使用 LCEL 語法（| 運算子）建立 Chain
 chain = llm | parser
 
-# 執行
+# 執行 Chain，傳入問題字串
 result = chain.invoke("用一句話介紹 Python")
-print(result)  # 直接是字串，不是 AIMessage 物件
-print(type(result))  # &lt;class 'str'&gt;</code></pre>
+print(result)  # 輸出：直接是字串，不是 AIMessage 物件
+print(type(result))  # 輸出：&lt;class 'str'&gt;</code></pre>
             </div>
         </div>
 
@@ -179,27 +183,34 @@ print(type(result))  # &lt;class 'str'&gt;</code></pre>
         <div class="slide">
             <div class="content-card">
                 <h2>實用：JsonOutputParser</h2>
-                <pre><code>from langchain_core.output_parsers import JsonOutputParser
+                <pre><code># 匯入 JSON 輸出解析器
+from langchain_core.output_parsers import JsonOutputParser
+# 匯入提示詞模板
 from langchain_core.prompts import PromptTemplate
 
+# 建立 JSON 解析器實例
 parser = JsonOutputParser()
 
+# 建立提示詞模板，包含格式指示
 template = PromptTemplate(
     template="""分析以下餐廳評論，輸出 JSON 格式。
 {format_instructions}
 
 評論：{review}""",
-    input_variables=["review"],
+    input_variables=["review"],  # 輸入變數：評論內容
+    # partial_variables：預先填入格式指示說明
     partial_variables={"format_instructions": parser.get_format_instructions()}
 )
 
+# 建立 Chain：提示詞 → LLM → JSON 解析器
 chain = template | llm | parser
 
+# 執行 Chain，傳入評論進行分析
 result = chain.invoke({
     "review": "這家牛肉麵超讚！湯頭濃郁，肉給很多，下次還會再來"
 })
 
-print(result)
+print(result)  # 輸出結果為 Python 字典
 # {'sentiment': 'positive', 'food_quality': 'excellent', 'would_revisit': True}</code></pre>
             </div>
         </div>
@@ -209,20 +220,24 @@ print(result)
             <div class="content-card">
                 <h2>進階：PydanticOutputParser</h2>
                 <p>使用 Pydantic 定義資料結構，確保輸出格式正確：</p>
-                <pre><code>from langchain_core.output_parsers import PydanticOutputParser
+                <pre><code># 匯入 Pydantic 輸出解析器
+from langchain_core.output_parsers import PydanticOutputParser
+# 匯入 Pydantic 基礎模型和欄位定義
 from pydantic import BaseModel, Field
+# 匯入 List 型別提示
 from typing import List
 
-# 定義資料結構
+# 定義股票分析的資料結構（使用 Pydantic 模型）
 class StockAnalysis(BaseModel):
-    stock_name: str = Field(description="股票名稱")
-    current_price: float = Field(description="目前股價")
-    rating: str = Field(description="評級：買入/持有/賣出")
-    reasons: List[str] = Field(description="分析理由")
+    stock_name: str = Field(description="股票名稱")      # 股票名稱欄位
+    current_price: float = Field(description="目前股價")  # 目前股價欄位
+    rating: str = Field(description="評級：買入/持有/賣出")  # 投資評級
+    reasons: List[str] = Field(description="分析理由")    # 分析理由列表
 
+# 建立 Pydantic 解析器，指定輸出格式為 StockAnalysis
 parser = PydanticOutputParser(pydantic_object=StockAnalysis)
 
-# 取得格式說明
+# 取得格式說明（會自動生成 JSON Schema 告訴 AI 如何輸出）
 print(parser.get_format_instructions())</code></pre>
             </div>
         </div>
@@ -231,26 +246,30 @@ print(parser.get_format_instructions())</code></pre>
         <div class="slide">
             <div class="content-card">
                 <h2>實作：股票分析結構化輸出</h2>
-                <pre><code>from langchain_core.prompts import PromptTemplate
+                <pre><code># 匯入提示詞模板
+from langchain_core.prompts import PromptTemplate
 
+# 建立股票分析的提示詞模板
 template = PromptTemplate(
     template="""你是股票分析師。分析 {stock} 並以指定格式輸出。
 {format_instructions}""",
-    input_variables=["stock"],
+    input_variables=["stock"],  # 輸入變數：股票名稱
+    # 預先填入格式指示（由 parser 自動生成）
     partial_variables={"format_instructions": parser.get_format_instructions()}
 )
 
+# 建立 Chain：提示詞 → LLM → Pydantic 解析器
 chain = template | llm | parser
 
-# 執行分析
+# 執行分析，傳入股票名稱
 result = chain.invoke({"stock": "台積電"})
 
-# result 是 StockAnalysis 物件
-print(f"股票：{result.stock_name}")
-print(f"股價：{result.current_price}")
-print(f"評級：{result.rating}")
+# result 是 StockAnalysis 物件，可直接存取屬性
+print(f"股票：{result.stock_name}")    # 存取股票名稱
+print(f"股價：{result.current_price}")  # 存取目前股價
+print(f"評級：{result.rating}")         # 存取投資評級
 print(f"理由：")
-for r in result.reasons:
+for r in result.reasons:               # 迴圈印出所有分析理由
     print(f"  - {r}")</code></pre>
             </div>
         </div>
@@ -259,22 +278,28 @@ for r in result.reasons:
         <div class="slide">
             <div class="content-card">
                 <h2>列表解析：CommaSeparatedListOutputParser</h2>
-                <pre><code>from langchain_core.output_parsers import CommaSeparatedListOutputParser
+                <pre><code># 匯入逗號分隔列表解析器
+from langchain_core.output_parsers import CommaSeparatedListOutputParser
 
+# 建立列表解析器實例
 parser = CommaSeparatedListOutputParser()
 
+# 建立提示詞模板，要求 AI 列出關鍵字
 template = PromptTemplate(
     template="列出 5 個 {category} 相關的關鍵字\n{format_instructions}",
-    input_variables=["category"],
+    input_variables=["category"],  # 輸入變數：類別名稱
+    # 預先填入格式指示（告訴 AI 用逗號分隔輸出）
     partial_variables={"format_instructions": parser.get_format_instructions()}
 )
 
+# 建立 Chain：提示詞 → LLM → 列表解析器
 chain = template | llm | parser
 
+# 執行 Chain，取得關鍵字列表
 result = chain.invoke({"category": "資料視覺化"})
-print(result)
+print(result)  # 輸出：Python 列表
 # ['Matplotlib', 'Seaborn', '圖表', '數據分析', '視覺化']
-print(type(result))  # &lt;class 'list'&gt;</code></pre>
+print(type(result))  # 輸出：&lt;class 'list'&gt;</code></pre>
                 <div class="box success">
                     輸出直接是 Python List，可以直接用於迴圈處理。
                 </div>
@@ -285,31 +310,37 @@ print(type(result))  # &lt;class 'list'&gt;</code></pre>
         <div class="slide">
             <div class="content-card">
                 <h2>實作練習：餐廳評論分析器</h2>
-                <pre><code>from pydantic import BaseModel, Field
+                <pre><code># 匯入 Pydantic 模型和欄位定義
+from pydantic import BaseModel, Field
 from typing import List
 
+# 定義餐廳評論的資料結構
 class RestaurantReview(BaseModel):
-    restaurant_name: str = Field(description="餐廳名稱")
-    rating: int = Field(description="評分 1-5")
-    pros: List[str] = Field(description="優點")
-    cons: List[str] = Field(description="缺點")
-    recommend: bool = Field(description="是否推薦")
+    restaurant_name: str = Field(description="餐廳名稱")  # 餐廳名稱
+    rating: int = Field(description="評分 1-5")          # 評分（1-5 分）
+    pros: List[str] = Field(description="優點")          # 優點列表
+    cons: List[str] = Field(description="缺點")          # 缺點列表
+    recommend: bool = Field(description="是否推薦")       # 是否推薦（布林值）
 
+# 建立 Pydantic 解析器
 parser = PydanticOutputParser(pydantic_object=RestaurantReview)
 
+# 建立分析評論的提示詞模板
 template = PromptTemplate(
     template="""分析以下餐廳評論：
 {review}
 
 {format_instructions}""",
-    input_variables=["review"],
+    input_variables=["review"],  # 輸入變數：評論內容
     partial_variables={"format_instructions": parser.get_format_instructions()}
 )
 
+# 建立 Chain 並執行
 chain = template | llm | parser
 result = chain.invoke({
     "review": "鼎泰豐的小籠包皮薄餡多，服務態度很好，但價格偏高要排隊很久"
-})</code></pre>
+})
+# result 為 RestaurantReview 物件，包含結構化的評論分析</code></pre>
             </div>
         </div>
 

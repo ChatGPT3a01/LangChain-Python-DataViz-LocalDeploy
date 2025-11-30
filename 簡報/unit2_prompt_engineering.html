@@ -159,15 +159,16 @@
             <div class="content-card">
                 <h2>PromptTemplate 基礎用法</h2>
                 <p>使用 <code>PromptTemplate</code> 建立可重複使用的提示詞模板：</p>
-                <pre><code>from langchain_core.prompts import PromptTemplate
+                <pre><code># 匯入 PromptTemplate 提示模板類別
+from langchain_core.prompts import PromptTemplate
 
-# 建立模板，使用 {變數名} 作為佔位符
+# 建立模板，使用 {變數名} 作為佔位符（可動態填入內容）
 template = PromptTemplate(
-    input_variables=["product", "target"],
+    input_variables=["product", "target"],  # 定義變數名稱列表
     template="請為 {product} 撰寫一段 50 字內的廣告文案，目標客群是 {target}"
 )
 
-# 填入變數，產生完整 Prompt
+# 使用 format 方法填入變數，產生完整 Prompt
 prompt = template.format(product="藍牙耳機", target="上班族")
 print(prompt)
 # 輸出：請為 藍牙耳機 撰寫一段 50 字內的廣告文案，目標客群是 上班族</code></pre>
@@ -178,24 +179,28 @@ print(prompt)
         <div class="slide">
             <div class="content-card">
                 <h2>實作：PromptTemplate + LLM</h2>
-                <pre><code>from langchain_openai import ChatOpenAI
+                <pre><code># 匯入 LangChain OpenAI 聊天模型
+from langchain_openai import ChatOpenAI
+# 匯入 PromptTemplate 提示模板
 from langchain_core.prompts import PromptTemplate
 
+# 建立語言模型實例
 llm = ChatOpenAI(model="gpt-3.5-turbo")
 
-# 建立資料分析專用模板
+# 建立資料分析專用模板（多行模板字串）
 analysis_template = PromptTemplate(
-    input_variables=["data_type", "focus"],
+    input_variables=["data_type", "focus"],  # 兩個動態變數
     template="""你是資料分析專家。
 請針對 {data_type} 進行分析，重點關注 {focus}。
 請用繁體中文回答，並以條列式呈現重點。"""
 )
 
-# 產生 Prompt 並調用 LLM
+# 填入變數產生完整 Prompt
 prompt = analysis_template.format(
     data_type="電商銷售數據",
     focus="季節性趨勢與客戶回購率"
 )
+# 將 Prompt 發送給 LLM 並取得回應
 response = llm.invoke(prompt)
 print(response.content)</code></pre>
             </div>
@@ -206,21 +211,22 @@ print(response.content)</code></pre>
             <div class="content-card">
                 <h2>ChatPromptTemplate 對話模板</h2>
                 <p>針對聊天模型，可以設定 System、Human、AI 角色：</p>
-                <pre><code>from langchain_core.prompts import ChatPromptTemplate
+                <pre><code># 匯入 ChatPromptTemplate 對話提示模板
+from langchain_core.prompts import ChatPromptTemplate
 
-# 建立對話模板
+# 建立對話模板（可設定系統角色和使用者訊息）
 chat_template = ChatPromptTemplate.from_messages([
-    ("system", "你是一位專業的 {role}，請用繁體中文回答"),
-    ("human", "{question}")
+    ("system", "你是一位專業的 {role}，請用繁體中文回答"),  # 系統角色設定
+    ("human", "{question}")  # 使用者問題
 ])
 
-# 產生訊息
+# 使用 format_messages 產生訊息列表
 messages = chat_template.format_messages(
     role="股票分析師",
     question="台積電近期走勢如何？"
 )
 
-# 調用 LLM
+# 將訊息列表發送給 LLM
 response = llm.invoke(messages)
 print(response.content)</code></pre>
             </div>
@@ -231,30 +237,32 @@ print(response.content)</code></pre>
             <div class="content-card">
                 <h2>Few-shot Learning 範例學習</h2>
                 <p>給 AI 幾個範例，讓它學習你期望的輸出格式：</p>
-                <pre><code>from langchain_core.prompts import FewShotPromptTemplate, PromptTemplate
+                <pre><code># 匯入 Few-shot 提示模板和基本模板
+from langchain_core.prompts import FewShotPromptTemplate, PromptTemplate
 
-# 定義範例
+# 定義範例資料（讓 AI 學習輸入輸出的對應關係）
 examples = [
     {"input": "台北今天很熱", "output": "天氣/觀察"},
     {"input": "這家餐廳超好吃", "output": "美食/正面評價"},
     {"input": "股票又跌了", "output": "財經/負面情緒"},
 ]
 
-# 範例格式模板
+# 定義每個範例的格式模板
 example_template = PromptTemplate(
     input_variables=["input", "output"],
     template="輸入：{input}\n分類：{output}"
 )
 
-# Few-shot 模板
+# 建立 Few-shot 模板（結合範例和使用者輸入）
 few_shot_prompt = FewShotPromptTemplate(
-    examples=examples,
-    example_prompt=example_template,
-    prefix="請將以下句子分類（類別/情緒）：",
-    suffix="輸入：{user_input}\n分類：",
-    input_variables=["user_input"]
+    examples=examples,            # 範例資料
+    example_prompt=example_template,  # 範例格式
+    prefix="請將以下句子分類（類別/情緒）：",  # 提示開頭
+    suffix="輸入：{user_input}\n分類：",       # 提示結尾（含使用者輸入）
+    input_variables=["user_input"]  # 使用者輸入變數
 )
 
+# 產生完整 Prompt（包含範例引導）
 prompt = few_shot_prompt.format(user_input="這部電影太精彩了")
 print(prompt)</code></pre>
             </div>
@@ -264,12 +272,15 @@ print(prompt)</code></pre>
         <div class="slide">
             <div class="content-card">
                 <h2>實作練習：建立數據摘要器</h2>
-                <pre><code>from langchain_openai import ChatOpenAI
+                <pre><code># 匯入 LangChain OpenAI 聊天模型
+from langchain_openai import ChatOpenAI
+# 匯入 ChatPromptTemplate 對話提示模板
 from langchain_core.prompts import ChatPromptTemplate
 
+# 建立語言模型實例
 llm = ChatOpenAI(model="gpt-3.5-turbo")
 
-# 建立數據摘要模板
+# 建立數據摘要專用模板（含系統角色設定和格式要求）
 summary_template = ChatPromptTemplate.from_messages([
     ("system", """你是資料分析師。請根據以下數據產生摘要報告。
 格式要求：
@@ -279,12 +290,13 @@ summary_template = ChatPromptTemplate.from_messages([
     ("human", "數據描述：{data_description}\n\n關鍵數字：{key_metrics}")
 ])
 
-# 使用模板
+# 填入變數產生訊息列表
 messages = summary_template.format_messages(
     data_description="某電商平台 2024 年 Q3 銷售數據",
     key_metrics="總營收 1.2 億，較去年同期成長 15%，客單價 850 元，回購率 42%"
 )
 
+# 發送給 LLM 並輸出摘要報告
 response = llm.invoke(messages)
 print(response.content)</code></pre>
             </div>

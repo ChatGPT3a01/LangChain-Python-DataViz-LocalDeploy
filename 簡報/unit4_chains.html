@@ -153,27 +153,33 @@
         <div class="slide">
             <div class="content-card">
                 <h2>基本 Chain 建立</h2>
-                <pre><code>from langchain_openai import ChatOpenAI
+                <pre><code># 匯入 OpenAI 聊天模型
+from langchain_openai import ChatOpenAI
+# 匯入聊天提示詞模板
 from langchain_core.prompts import ChatPromptTemplate
+# 匯入字串輸出解析器
 from langchain_core.output_parsers import StrOutputParser
 
-# 元件準備
+# 準備 Chain 元件
+# 建立聊天提示詞模板（包含系統訊息和用戶訊息）
 prompt = ChatPromptTemplate.from_messages([
-    ("system", "你是資料分析專家"),
-    ("human", "分析這段數據：{data}")
+    ("system", "你是資料分析專家"),      # 系統角色設定
+    ("human", "分析這段數據：{data}")    # 用戶輸入模板
 ])
 
+# 建立 LLM 模型實例
 llm = ChatOpenAI(model="gpt-3.5-turbo")
+# 建立字串解析器
 parser = StrOutputParser()
 
-# 使用 | 建立 Chain
+# 使用 LCEL 語法 | 建立 Chain（管道串聯）
 chain = prompt | llm | parser
 
-# 執行 Chain
+# 執行 Chain，傳入數據進行分析
 result = chain.invoke({
     "data": "Q1 營收 100 萬，Q2 營收 150 萬，Q3 營收 120 萬"
 })
-print(result)</code></pre>
+print(result)  # 輸出 AI 的分析結果</code></pre>
             </div>
         </div>
 
@@ -181,19 +187,22 @@ print(result)</code></pre>
         <div class="slide">
             <div class="content-card">
                 <h2>RunnablePassthrough 傳遞原始輸入</h2>
-                <pre><code>from langchain_core.runnables import RunnablePassthrough
+                <pre><code># 匯入 RunnablePassthrough（用於傳遞原始輸入）
+from langchain_core.runnables import RunnablePassthrough
 
-# 有時候需要在 Chain 中保留原始輸入
+# 有時候需要在 Chain 中同時保留原始輸入和處理結果
 chain = (
     {
+        # RunnablePassthrough() 會將原始輸入原封不動傳遞下去
         "original": RunnablePassthrough(),  # 保留原始輸入
-        "analysis": prompt | llm | parser   # 分析結果
+        "analysis": prompt | llm | parser   # 同時進行 AI 分析
     }
 )
 
+# 執行 Chain，輸出結果為字典格式
 result = chain.invoke("台積電股價分析")
-print(result["original"])   # 原始輸入
-print(result["analysis"])   # AI 分析結果</code></pre>
+print(result["original"])   # 輸出：原始輸入字串
+print(result["analysis"])   # 輸出：AI 分析結果</code></pre>
                 <div class="box success">
                     <strong>用途：</strong>當你需要同時保留原始數據和 AI 處理結果時使用。
                 </div>
@@ -204,26 +213,28 @@ print(result["analysis"])   # AI 分析結果</code></pre>
         <div class="slide">
             <div class="content-card">
                 <h2>RunnableParallel 並行處理</h2>
-                <pre><code>from langchain_core.runnables import RunnableParallel
+                <pre><code># 匯入 RunnableParallel（用於並行執行多個 Chain）
+from langchain_core.runnables import RunnableParallel
 
-# 定義多個分析任務
-sentiment_chain = sentiment_prompt | llm | parser
-summary_chain = summary_prompt | llm | parser
-keywords_chain = keywords_prompt | llm | parser
+# 定義多個分析任務的 Chain
+sentiment_chain = sentiment_prompt | llm | parser  # 情緒分析 Chain
+summary_chain = summary_prompt | llm | parser      # 摘要生成 Chain
+keywords_chain = keywords_prompt | llm | parser    # 關鍵字提取 Chain
 
-# 並行執行多個 Chain
+# 使用 RunnableParallel 建立並行執行的 Chain
 parallel_chain = RunnableParallel(
-    sentiment=sentiment_chain,
-    summary=summary_chain,
-    keywords=keywords_chain
+    sentiment=sentiment_chain,   # 情緒分析任務
+    summary=summary_chain,       # 摘要任務
+    keywords=keywords_chain      # 關鍵字任務
 )
 
-# 一次調用，三個分析同時進行
+# 一次調用，三個分析任務同時並行執行（提升效率）
 result = parallel_chain.invoke({"text": "這家餐廳服務很好，但價格偏高"})
 
-print(result["sentiment"])  # 情緒分析
-print(result["summary"])    # 摘要
-print(result["keywords"])   # 關鍵字</code></pre>
+# 取得各任務的結果
+print(result["sentiment"])  # 輸出：情緒分析結果
+print(result["summary"])    # 輸出：摘要結果
+print(result["keywords"])   # 輸出：關鍵字列表</code></pre>
             </div>
         </div>
 
@@ -231,32 +242,34 @@ print(result["keywords"])   # 關鍵字</code></pre>
         <div class="slide">
             <div class="content-card">
                 <h2>實作：完整數據分析 Chain</h2>
-                <pre><code>from langchain_core.prompts import ChatPromptTemplate
+                <pre><code># 匯入聊天提示詞模板
+from langchain_core.prompts import ChatPromptTemplate
+# 匯入 JSON 輸出解析器
 from langchain_core.output_parsers import JsonOutputParser
 
-# Step 1: 數據清理提示詞
+# Step 1: 數據清理提示詞（將原始數據整理成 JSON）
 clean_prompt = ChatPromptTemplate.from_template(
     "將以下原始數據整理成 JSON 格式：\n{raw_data}"
 )
 
-# Step 2: 數據分析提示詞
+# Step 2: 數據分析提示詞（分析 JSON 找出趨勢）
 analyze_prompt = ChatPromptTemplate.from_template(
     "分析以下 JSON 數據，找出趨勢和異常：\n{cleaned_data}"
 )
 
-# Step 3: 報告生成提示詞
+# Step 3: 報告生成提示詞（生成摘要報告）
 report_prompt = ChatPromptTemplate.from_template(
     "根據分析結果生成摘要報告：\n{analysis}"
 )
 
-# 組合完整 Chain
+# 組合完整的多步驟 Chain（資料流水線處理）
 full_chain = (
-    {"raw_data": RunnablePassthrough()}
-    | clean_prompt | llm | StrOutputParser()
-    | {"cleaned_data": RunnablePassthrough()}
-    | analyze_prompt | llm | StrOutputParser()
-    | {"analysis": RunnablePassthrough()}
-    | report_prompt | llm | StrOutputParser()
+    {"raw_data": RunnablePassthrough()}        # 接收原始數據
+    | clean_prompt | llm | StrOutputParser()   # 第一步：清理數據
+    | {"cleaned_data": RunnablePassthrough()}  # 傳遞清理後的數據
+    | analyze_prompt | llm | StrOutputParser() # 第二步：分析數據
+    | {"analysis": RunnablePassthrough()}      # 傳遞分析結果
+    | report_prompt | llm | StrOutputParser()  # 第三步：生成報告
 )</code></pre>
             </div>
         </div>
@@ -265,24 +278,25 @@ full_chain = (
         <div class="slide">
             <div class="content-card">
                 <h2>RunnableBranch 條件分支</h2>
-                <pre><code>from langchain_core.runnables import RunnableBranch
+                <pre><code># 匯入 RunnableBranch（用於條件分支處理）
+from langchain_core.runnables import RunnableBranch
 
 # 定義不同類型的處理 Chain
-stock_chain = stock_prompt | llm | parser
-food_chain = food_prompt | llm | parser
-default_chain = general_prompt | llm | parser
+stock_chain = stock_prompt | llm | parser      # 股票分析 Chain
+food_chain = food_prompt | llm | parser        # 餐廳評價 Chain
+default_chain = general_prompt | llm | parser  # 通用預設 Chain
 
-# 建立條件分支
+# 建立條件分支（根據輸入內容自動選擇處理方式）
 branch_chain = RunnableBranch(
-    # (條件函式, 對應的 Chain)
-    (lambda x: "股票" in x["topic"], stock_chain),
-    (lambda x: "餐廳" in x["topic"], food_chain),
-    default_chain  # 預設 Chain
+    # 格式：(條件判斷函式, 對應的 Chain)
+    (lambda x: "股票" in x["topic"], stock_chain),  # 包含「股票」→ 股票分析
+    (lambda x: "餐廳" in x["topic"], food_chain),   # 包含「餐廳」→ 餐廳評價
+    default_chain  # 都不符合時使用預設 Chain
 )
 
-# 根據輸入自動選擇處理方式
-result1 = branch_chain.invoke({"topic": "台積電股票分析"})
-result2 = branch_chain.invoke({"topic": "鼎泰豐餐廳評價"})</code></pre>
+# 根據輸入自動選擇對應的處理方式
+result1 = branch_chain.invoke({"topic": "台積電股票分析"})  # 走 stock_chain
+result2 = branch_chain.invoke({"topic": "鼎泰豐餐廳評價"})  # 走 food_chain</code></pre>
             </div>
         </div>
 
@@ -290,30 +304,34 @@ result2 = branch_chain.invoke({"topic": "鼎泰豐餐廳評價"})</code></pre>
         <div class="slide">
             <div class="content-card">
                 <h2>實作練習：多功能分析器</h2>
-                <pre><code># 建立一個可以處理不同類型數據的 Chain
+                <pre><code># 建立一個可以同時處理多種分析任務的 Chain
 from langchain_core.runnables import RunnableParallel
 
 def create_analysis_chain():
-    # 情緒分析
+    """建立多功能文字分析器"""
+    # 情緒分析提示詞
     sentiment_prompt = ChatPromptTemplate.from_template(
         "分析以下文字的情緒（正面/負面/中性）：{text}"
     )
-    # 關鍵字提取
+    # 關鍵字提取提示詞
     keyword_prompt = ChatPromptTemplate.from_template(
         "提取以下文字的 3 個關鍵字：{text}"
     )
-    # 摘要生成
+    # 摘要生成提示詞
     summary_prompt = ChatPromptTemplate.from_template(
         "用一句話摘要以下內容：{text}"
     )
 
+    # 使用 RunnableParallel 並行執行三個分析任務
     return RunnableParallel(
-        sentiment=sentiment_prompt | llm | StrOutputParser(),
-        keywords=keyword_prompt | llm | StrOutputParser(),
-        summary=summary_prompt | llm | StrOutputParser()
+        sentiment=sentiment_prompt | llm | StrOutputParser(),  # 情緒分析
+        keywords=keyword_prompt | llm | StrOutputParser(),     # 關鍵字提取
+        summary=summary_prompt | llm | StrOutputParser()       # 摘要生成
     )
 
+# 建立分析器實例
 analyzer = create_analysis_chain()
+# 執行分析，一次取得三種分析結果
 result = analyzer.invoke({"text": "您的文字內容"})</code></pre>
             </div>
         </div>

@@ -155,19 +155,24 @@
         <div class="slide">
             <div class="content-card">
                 <h2>Step 1: 載入餐廳數據</h2>
-                <pre><code>import pandas as pd
+                <pre><code># 匯入資料處理套件
+import pandas as pd
+# 匯入繪圖套件
 import matplotlib.pyplot as plt
 
-# 設定中文字型
+# 設定 Matplotlib 中文字型（Windows 使用微軟正黑體）
 plt.rcParams['font.sans-serif'] = ['Microsoft JhengHei']
+# 解決負號顯示問題
 plt.rcParams['axes.unicode_minus'] = False
 
-# 載入數據
+# 載入 CSV 餐廳數據，使用 UTF-8 BOM 編碼（避免中文亂碼）
 df = pd.read_csv('data/restaurants.csv', encoding='utf-8-sig')
 
+# 顯示基本資訊
 print(f"載入 {len(df)} 家餐廳資料")
 print(f"欄位: {list(df.columns)}")
 print(f"\n城市分布:")
+# 統計各城市餐廳數量
 print(df['City'].value_counts())</code></pre>
                 <div class="box info">
                     數據包含：餐廳名稱、城市、類型、評分、價格、評論數等欄位
@@ -179,23 +184,24 @@ print(df['City'].value_counts())</code></pre>
         <div class="slide">
             <div class="content-card">
                 <h2>Step 2: 基本統計分析</h2>
-                <pre><code># 計算各城市統計
+                <pre><code># 使用 groupby 依城市分組，並計算多個聚合統計值
 city_stats = df.groupby('City').agg({
-    'Rating': ['mean', 'max', 'min'],
-    'Avg_Price': 'mean',
-    'Review_Count': 'sum'
-}).round(2)
+    'Rating': ['mean', 'max', 'min'],   # 評分：平均、最高、最低
+    'Avg_Price': 'mean',                 # 平均消費金額
+    'Review_Count': 'sum'                # 評論總數
+}).round(2)  # 四捨五入到小數點後 2 位
 
 print("各城市餐廳統計：")
 print(city_stats)
 
-# 高評價餐廳
+# 篩選高評價餐廳（評分 >= 4.5）
 high_rated = df[df['Rating'] >= 4.5]
 print(f"\n4.5星以上餐廳: {len(high_rated)} 家")
 
-# 各類型平均評分
+# 依餐廳類型分組，計算平均評分並排序（由高到低）
 cuisine_rating = df.groupby('Cuisine_Type')['Rating'].mean().sort_values(ascending=False)
 print("\n各餐廳類型平均評分：")
+# 顯示前 5 名
 print(cuisine_rating.head())</code></pre>
             </div>
         </div>
@@ -204,28 +210,32 @@ print(cuisine_rating.head())</code></pre>
         <div class="slide">
             <div class="content-card">
                 <h2>Step 3: 數據視覺化</h2>
-                <pre><code>fig, axes = plt.subplots(2, 2, figsize=(14, 10))
+                <pre><code># 建立 2x2 子圖佈局，設定畫布大小為 14x10 英吋
+fig, axes = plt.subplots(2, 2, figsize=(14, 10))
 
-# 1. 評分分布
+# 圖表 1：評分分布直方圖
 axes[0,0].hist(df['Rating'], bins=20, color='coral', edgecolor='black')
 axes[0,0].set_title('餐廳評分分布')
 axes[0,0].set_xlabel('評分')
 
-# 2. 各城市餐廳數量
-city_counts = df['City'].value_counts()
-axes[0,1].bar(city_counts.index, city_counts.values, color=['#e74c3c','#3498db','#2ecc71','#f39c12'])
+# 圖表 2：各城市餐廳數量長條圖
+city_counts = df['City'].value_counts()  # 統計各城市餐廳數量
+axes[0,1].bar(city_counts.index, city_counts.values,
+              color=['#e74c3c','#3498db','#2ecc71','#f39c12'])  # 四種顏色
 axes[0,1].set_title('各城市餐廳數量')
 
-# 3. 價格區間分布
-price_dist = df['Price_Range'].value_counts()
+# 圖表 3：價格區間圓餅圖
+price_dist = df['Price_Range'].value_counts()  # 統計各價格區間數量
 axes[1,0].pie(price_dist.values, labels=price_dist.index, autopct='%1.1f%%')
 axes[1,0].set_title('價格區間分布')
 
-# 4. 評分與價格關係
+# 圖表 4：價格與評分散佈圖（觀察相關性）
 axes[1,1].scatter(df['Avg_Price'], df['Rating'], alpha=0.5, c='purple')
 axes[1,1].set_title('價格 vs 評分')
 
+# 自動調整子圖間距
 plt.tight_layout()
+# 儲存圖表為高解析度 PNG（300 DPI）
 plt.savefig('output/餐廳分析.png', dpi=300)</code></pre>
             </div>
         </div>
@@ -234,12 +244,15 @@ plt.savefig('output/餐廳分析.png', dpi=300)</code></pre>
         <div class="slide">
             <div class="content-card">
                 <h2>Step 4: LangChain AI 分析整合</h2>
-                <pre><code>from langchain_openai import ChatOpenAI
+                <pre><code># 匯入 LangChain OpenAI 模組
+from langchain_openai import ChatOpenAI
+# 匯入提示模板類別
 from langchain_core.prompts import ChatPromptTemplate
 
+# 初始化 GPT-3.5-turbo 語言模型
 llm = ChatOpenAI(model="gpt-3.5-turbo")
 
-# 準備數據摘要
+# 準備數據摘要（使用 f-string 格式化）
 data_summary = f"""
 台灣餐廳數據摘要：
 - 總餐廳數：{len(df)} 家
@@ -250,14 +263,17 @@ data_summary = f"""
 - 各類型餐廳數：{df['Cuisine_Type'].value_counts().head(5).to_dict()}
 """
 
-# 建立分析模板
+# 建立對話提示模板（包含系統角色設定和使用者問題）
 analysis_prompt = ChatPromptTemplate.from_messages([
     ("system", "你是美食數據分析專家，請用繁體中文提供專業分析"),
     ("human", "根據以下數據，提供 3 個關鍵洞察和 2 個行銷建議：\n{data}")
 ])
 
+# 使用 LCEL 串接：提示模板 | 語言模型
 chain = analysis_prompt | llm
+# 執行鏈並傳入變數
 response = chain.invoke({"data": data_summary})
+# 輸出 AI 回應內容
 print(response.content)</code></pre>
             </div>
         </div>
@@ -266,25 +282,32 @@ print(response.content)</code></pre>
         <div class="slide">
             <div class="content-card">
                 <h2>Step 5: AI 智慧推薦系統</h2>
-                <pre><code>from langchain_core.output_parsers import JsonOutputParser
+                <pre><code># 匯入 JSON 輸出解析器（將 AI 回應轉為 Python 字典）
+from langchain_core.output_parsers import JsonOutputParser
 
-# 建立推薦模板
+# 建立推薦系統提示模板
 recommend_prompt = ChatPromptTemplate.from_messages([
     ("system", """你是餐廳推薦專家。根據用戶需求和餐廳數據推薦最適合的餐廳。
 輸出 JSON 格式：{{"recommendations": [餐廳名稱列表], "reason": "推薦原因"}}"""),
     ("human", "用戶需求：{requirement}\n\n可選餐廳：{restaurants}")
 ])
 
+# 初始化 JSON 解析器
 parser = JsonOutputParser()
+# 串接完整鏈：提示模板 → 語言模型 → JSON 解析器
 recommend_chain = recommend_prompt | llm | parser
 
-# 執行推薦
-top_restaurants = df.nlargest(20, 'Rating')[['Restaurant_Name', 'City', 'Cuisine_Type', 'Rating', 'Avg_Price']]
+# 取得評分前 20 名的餐廳資料
+top_restaurants = df.nlargest(20, 'Rating')[
+    ['Restaurant_Name', 'City', 'Cuisine_Type', 'Rating', 'Avg_Price']
+]
+# 執行推薦鏈
 result = recommend_chain.invoke({
     "requirement": "台北高評價日式料理，預算 500 以內",
     "restaurants": top_restaurants.to_string()
 })
 
+# 輸出推薦結果
 print("推薦餐廳：", result["recommendations"])
 print("推薦原因：", result["reason"])</code></pre>
             </div>
@@ -295,33 +318,40 @@ print("推薦原因：", result["reason"])</code></pre>
             <div class="content-card">
                 <h2>Step 6: 整合完整分析流程</h2>
                 <pre><code>def analyze_restaurants_with_ai(df, city=None, cuisine=None):
-    """整合視覺化與 AI 的完整分析"""
-
-    # 篩選數據
+    """
+    整合視覺化與 AI 的完整分析函數
+    參數：df=資料框, city=城市篩選, cuisine=餐廳類型篩選
+    """
+    # 複製資料框（避免修改原始資料）
     filtered = df.copy()
+    # 依城市篩選（如果有指定）
     if city:
         filtered = filtered[filtered['City'] == city]
+    # 依餐廳類型篩選（如果有指定）
     if cuisine:
         filtered = filtered[filtered['Cuisine_Type'] == cuisine]
 
-    # 產生統計摘要
+    # 產生統計摘要字典
     summary = {
-        "count": len(filtered),
-        "avg_rating": filtered['Rating'].mean(),
-        "avg_price": filtered['Avg_Price'].mean(),
+        "count": len(filtered),                  # 餐廳數量
+        "avg_rating": filtered['Rating'].mean(), # 平均評分
+        "avg_price": filtered['Avg_Price'].mean(), # 平均消費
         "top_restaurant": filtered.loc[filtered['Rating'].idxmax(), 'Restaurant_Name']
     }
 
-    # AI 分析
+    # 建立 AI 分析提示模板
     prompt = ChatPromptTemplate.from_template(
         "分析以下餐廳統計，提供 2 個商業洞察：\n{stats}"
     )
+    # 串接鏈並使用字串輸出解析器
     chain = prompt | llm | StrOutputParser()
+    # 執行 AI 分析
     insights = chain.invoke({"stats": str(summary)})
 
+    # 回傳統計數據和 AI 洞察
     return {"statistics": summary, "ai_insights": insights}
 
-# 執行分析
+# 執行分析：台北的日式料理餐廳
 result = analyze_restaurants_with_ai(df, city="台北", cuisine="日式料理")
 print(result)</code></pre>
             </div>

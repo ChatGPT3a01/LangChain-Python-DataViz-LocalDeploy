@@ -129,18 +129,24 @@
         <div class="slide">
             <div class="content-card">
                 <h2>Step 1: 載入電商數據</h2>
-                <pre><code>import pandas as pd
+                <pre><code># 匯入資料處理套件
+import pandas as pd
+# 匯入繪圖套件
 import matplotlib.pyplot as plt
+# 匯入統計視覺化套件
 import seaborn as sns
 
-# 載入銷售數據
+# 載入電商銷售 CSV 數據
 df = pd.read_csv('data/ecommerce_sales.csv')
+# 將訂單日期轉換為 datetime 格式
 df['Order_Date'] = pd.to_datetime(df['Order_Date'])
+# 提取月份週期（格式：2024-01）
 df['Month'] = df['Order_Date'].dt.to_period('M')
 
-# 計算訂單金額
+# 計算每筆訂單總金額 = 數量 × 單價
 df['Total_Amount'] = df['Quantity'] * df['Unit_Price']
 
+# 顯示資料概要（使用千分位格式）
 print(f"訂單數量: {len(df):,}")
 print(f"時間範圍: {df['Order_Date'].min()} ~ {df['Order_Date'].max()}")
 print(f"產品類別: {df['Category'].unique()}")</code></pre>
@@ -154,23 +160,29 @@ print(f"產品類別: {df['Category'].unique()}")</code></pre>
         <div class="slide">
             <div class="content-card">
                 <h2>Step 2: 月營收趨勢圖</h2>
-                <pre><code># 計算月營收
+                <pre><code># 依月份分組計算營收總額
 monthly_revenue = df.groupby('Month')['Total_Amount'].sum().reset_index()
+# 將月份轉為字串格式（方便繪圖顯示）
 monthly_revenue['Month'] = monthly_revenue['Month'].astype(str)
 
+# 建立畫布
 fig, ax = plt.subplots(figsize=(14, 6))
+# 繪製長條圖（營收柱狀圖）
 ax.bar(monthly_revenue['Month'], monthly_revenue['Total_Amount'],
        color='#6c5ce7', alpha=0.8)
 
-# 加上趨勢線
+# 加上趨勢線（紅色圓點連線）
 ax.plot(monthly_revenue['Month'], monthly_revenue['Total_Amount'],
         'ro-', linewidth=2, markersize=8)
 
+# 設定標題和軸標籤
 ax.set_title('月營收趨勢', fontsize=16)
 ax.set_xlabel('月份')
 ax.set_ylabel('營收 (元)')
+# X 軸標籤旋轉 45 度（避免重疊）
 ax.tick_params(axis='x', rotation=45)
 
+# 儲存圖表
 plt.tight_layout()
 plt.savefig('output/月營收趨勢.png', dpi=300)</code></pre>
             </div>
@@ -180,21 +192,24 @@ plt.savefig('output/月營收趨勢.png', dpi=300)</code></pre>
         <div class="slide">
             <div class="content-card">
                 <h2>Step 3: 產品類別分析</h2>
-                <pre><code># 各類別銷售額
+                <pre><code># 依產品類別分組，計算銷售總額並由高到低排序
 category_sales = df.groupby('Category')['Total_Amount'].sum().sort_values(ascending=False)
 
+# 建立 1x2 子圖佈局
 fig, axes = plt.subplots(1, 2, figsize=(14, 6))
 
-# 圓餅圖
+# 左圖：圓餅圖（顯示各類別銷售佔比）
 axes[0].pie(category_sales.values, labels=category_sales.index,
-            autopct='%1.1f%%', colors=plt.cm.Purples(np.linspace(0.3, 0.9, len(category_sales))))
+            autopct='%1.1f%%',  # 顯示百分比（小數點後1位）
+            colors=plt.cm.Purples(np.linspace(0.3, 0.9, len(category_sales))))  # 紫色漸層
 axes[0].set_title('各類別銷售佔比')
 
-# 長條圖
+# 右圖：水平長條圖（銷售額排名）
 axes[1].barh(category_sales.index, category_sales.values, color='#6c5ce7')
 axes[1].set_xlabel('銷售額 (元)')
 axes[1].set_title('各類別銷售額排名')
 
+# 儲存圖表
 plt.tight_layout()
 plt.savefig('output/產品類別分析.png', dpi=300)</code></pre>
             </div>
@@ -204,18 +219,22 @@ plt.savefig('output/產品類別分析.png', dpi=300)</code></pre>
         <div class="slide">
             <div class="content-card">
                 <h2>Step 4: AI 銷售洞察分析</h2>
-                <pre><code>from langchain_openai import ChatOpenAI
+                <pre><code># 匯入 LangChain OpenAI 模組
+from langchain_openai import ChatOpenAI
+# 匯入提示模板類別
 from langchain_core.prompts import ChatPromptTemplate
 
+# 初始化語言模型
 llm = ChatOpenAI(model="gpt-3.5-turbo")
 
-# 準備銷售統計
+# 依產品類別分組計算統計數據
 sales_stats = df.groupby('Category').agg({
-    'Total_Amount': ['sum', 'mean'],
-    'Order_ID': 'count',
-    'Quantity': 'sum'
-}).round(0)
+    'Total_Amount': ['sum', 'mean'],  # 銷售總額、平均金額
+    'Order_ID': 'count',               # 訂單數量
+    'Quantity': 'sum'                  # 銷售數量
+}).round(0)  # 四捨五入為整數
 
+# 建立銷售分析提示模板
 analysis_prompt = ChatPromptTemplate.from_messages([
     ("system", "你是電商數據分析專家，請用繁體中文提供商業洞察"),
     ("human", """根據以下銷售數據：
@@ -227,8 +246,10 @@ analysis_prompt = ChatPromptTemplate.from_messages([
 3. 提升營收的具體建議""")
 ])
 
+# 使用 LCEL 串接並執行
 chain = analysis_prompt | llm
 response = chain.invoke({"stats": sales_stats.to_string()})
+# 輸出 AI 分析結果
 print(response.content)</code></pre>
             </div>
         </div>
@@ -237,27 +258,37 @@ print(response.content)</code></pre>
         <div class="slide">
             <div class="content-card">
                 <h2>Step 5: RFM 客戶分群分析</h2>
-                <pre><code>from datetime import datetime
+                <pre><code># 匯入日期時間模組
+from datetime import datetime
 
-# 計算 RFM 指標
+# 設定基準日期（最後一筆訂單日期）
 today = df['Order_Date'].max()
 
+# 依客戶 ID 分組，計算 RFM 三項指標
 rfm = df.groupby('Customer_ID').agg({
-    'Order_Date': lambda x: (today - x.max()).days,  # Recency
-    'Order_ID': 'count',                              # Frequency
-    'Total_Amount': 'sum'                             # Monetary
+    # Recency（近期購買）：距離上次購買的天數
+    'Order_Date': lambda x: (today - x.max()).days,
+    # Frequency（購買頻率）：訂單次數
+    'Order_ID': 'count',
+    # Monetary（消費金額）：消費總額
+    'Total_Amount': 'sum'
 }).rename(columns={
     'Order_Date': 'Recency',
     'Order_ID': 'Frequency',
     'Total_Amount': 'Monetary'
 })
 
-# RFM 評分
+# 將 RFM 值轉換為 1-4 分評分（使用四分位數切分）
+# R 分數：天數越少分數越高（4=最近購買）
 rfm['R_Score'] = pd.qcut(rfm['Recency'], 4, labels=[4,3,2,1])
+# F 分數：次數越多分數越高
 rfm['F_Score'] = pd.qcut(rfm['Frequency'].rank(method='first'), 4, labels=[1,2,3,4])
+# M 分數：金額越高分數越高
 rfm['M_Score'] = pd.qcut(rfm['Monetary'], 4, labels=[1,2,3,4])
+# 組合 RFM 分數字串（如：444 表示高價值客戶）
 rfm['RFM_Score'] = rfm['R_Score'].astype(str) + rfm['F_Score'].astype(str) + rfm['M_Score'].astype(str)
 
+# 顯示前 10 筆客戶 RFM 分析結果
 print(rfm.head(10))</code></pre>
             </div>
         </div>
@@ -266,30 +297,36 @@ print(rfm.head(10))</code></pre>
         <div class="slide">
             <div class="content-card">
                 <h2>Step 6: AI 客戶行銷建議</h2>
-                <pre><code>from langchain_core.output_parsers import JsonOutputParser
+                <pre><code># 匯入 JSON 輸出解析器
+from langchain_core.output_parsers import JsonOutputParser
 
-# 建立客戶洞察模板
+# 建立客戶洞察提示模板（指定 JSON 輸出格式）
 customer_prompt = ChatPromptTemplate.from_messages([
     ("system", """你是CRM專家。根據客戶RFM分數提供行銷建議。
 輸出JSON：{{"segment": "客群名稱", "strategy": "行銷策略", "channel": "推薦管道"}}"""),
     ("human", "客戶RFM分數：R={r}, F={f}, M={m}")
 ])
 
+# 初始化 JSON 解析器
 parser = JsonOutputParser()
+# 串接完整鏈：提示模板 → 語言模型 → JSON 解析
 customer_chain = customer_prompt | llm | parser
 
-# 分析高價值客戶
+# 篩選高價值客戶（R >= 3 且 M >= 3）
 vip_customers = rfm[
     (rfm['R_Score'].astype(int) >= 3) &
     (rfm['M_Score'].astype(int) >= 3)
-].head(5)
+].head(5)  # 取前 5 名
 
+# 迴圈分析每位 VIP 客戶
 for idx, row in vip_customers.iterrows():
+    # 執行 AI 分析鏈
     result = customer_chain.invoke({
         "r": row['R_Score'],
         "f": row['F_Score'],
         "m": row['M_Score']
     })
+    # 輸出客戶分群和建議策略
     print(f"客戶 {idx}: {result['segment']} - {result['strategy']}")</code></pre>
             </div>
         </div>

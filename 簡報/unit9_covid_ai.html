@@ -129,23 +129,28 @@
         <div class="slide">
             <div class="content-card">
                 <h2>Step 1: 載入疫情數據</h2>
-                <pre><code>import pandas as pd
+                <pre><code># 匯入資料處理套件
+import pandas as pd
+# 匯入繪圖套件
 import matplotlib.pyplot as plt
+# 匯入數值計算套件
 import numpy as np
 
-# 載入確診數據
+# 載入 COVID-19 確診數據 CSV
 cases_df = pd.read_csv('data/covid_cases.csv')
+# 將日期欄位轉換為 datetime 格式
 cases_df['Date'] = pd.to_datetime(cases_df['Date'])
 
-# 載入疫苗數據
+# 載入疫苗接種數據 CSV
 vaccine_df = pd.read_csv('data/covid_vaccines.csv')
 vaccine_df['Date'] = pd.to_datetime(vaccine_df['Date'])
 
-# 計算7日移動平均
+# 計算 7 日移動平均（平滑趨勢線）
 cases_df['Cases_7MA'] = cases_df['New_Cases'].rolling(window=7).mean()
 
+# 顯示資料概要
 print(f"時間範圍: {cases_df['Date'].min()} ~ {cases_df['Date'].max()}")
-print(f"總確診數: {cases_df['New_Cases'].sum():,}")
+print(f"總確診數: {cases_df['New_Cases'].sum():,}")  # 千分位格式
 print(f"疫苗覆蓋率: {vaccine_df['Coverage_Rate'].iloc[-1]:.1f}%")</code></pre>
             </div>
         </div>
@@ -154,25 +159,27 @@ print(f"疫苗覆蓋率: {vaccine_df['Coverage_Rate'].iloc[-1]:.1f}%")</code></p
         <div class="slide">
             <div class="content-card">
                 <h2>Step 2: 確診趨勢視覺化</h2>
-                <pre><code>fig, axes = plt.subplots(2, 1, figsize=(14, 10))
+                <pre><code># 建立 2x1 垂直子圖佈局
+fig, axes = plt.subplots(2, 1, figsize=(14, 10))
 
-# 每日確診與移動平均
+# 上圖：每日確診長條圖 + 7日移動平均線
 axes[0].bar(cases_df['Date'], cases_df['New_Cases'],
-            alpha=0.4, color='#55a3ff', label='每日確診')
+            alpha=0.4, color='#55a3ff', label='每日確診')  # 半透明長條
 axes[0].plot(cases_df['Date'], cases_df['Cases_7MA'],
-             color='#003d82', linewidth=2, label='7日移動平均')
+             color='#003d82', linewidth=2, label='7日移動平均')  # 趨勢線
 axes[0].set_title('COVID-19 每日確診趨勢', fontsize=16)
-axes[0].legend()
+axes[0].legend()  # 顯示圖例
 axes[0].set_ylabel('確診人數')
 
-# 累計確診
-cases_df['Cumulative'] = cases_df['New_Cases'].cumsum()
+# 下圖：累計確診面積圖
+cases_df['Cumulative'] = cases_df['New_Cases'].cumsum()  # 計算累計值
 axes[1].fill_between(cases_df['Date'], cases_df['Cumulative'],
-                     alpha=0.5, color='#55a3ff')
-axes[1].plot(cases_df['Date'], cases_df['Cumulative'], color='#003d82')
+                     alpha=0.5, color='#55a3ff')  # 填滿區域
+axes[1].plot(cases_df['Date'], cases_df['Cumulative'], color='#003d82')  # 邊線
 axes[1].set_title('累計確診人數', fontsize=16)
 axes[1].set_ylabel('累計人數')
 
+# 儲存圖表
 plt.tight_layout()
 plt.savefig('output/確診趨勢.png', dpi=300)</code></pre>
             </div>
@@ -182,9 +189,10 @@ plt.savefig('output/確診趨勢.png', dpi=300)</code></pre>
         <div class="slide">
             <div class="content-card">
                 <h2>Step 3: 疫苗接種分析</h2>
-                <pre><code>fig, axes = plt.subplots(1, 2, figsize=(14, 6))
+                <pre><code># 建立 1x2 水平子圖佈局
+fig, axes = plt.subplots(1, 2, figsize=(14, 6))
 
-# 疫苗覆蓋率趨勢
+# 左圖：疫苗接種覆蓋率趨勢（三條線）
 axes[0].plot(vaccine_df['Date'], vaccine_df['First_Dose'],
              label='第一劑', linewidth=2)
 axes[0].plot(vaccine_df['Date'], vaccine_df['Second_Dose'],
@@ -193,15 +201,17 @@ axes[0].plot(vaccine_df['Date'], vaccine_df['Booster'],
              label='追加劑', linewidth=2)
 axes[0].set_title('疫苗接種覆蓋率趨勢')
 axes[0].set_ylabel('覆蓋率 (%)')
-axes[0].legend()
-axes[0].grid(True, alpha=0.3)
+axes[0].legend()  # 顯示圖例
+axes[0].grid(True, alpha=0.3)  # 顯示網格線
 
-# 疫苗品牌分布（圓餅圖）
-vaccine_brands = vaccine_df.groupby('Vaccine_Type')['Doses'].sum()
+# 右圖：疫苗品牌分布圓餅圖
+vaccine_brands = vaccine_df.groupby('Vaccine_Type')['Doses'].sum()  # 依品牌統計總劑數
 axes[1].pie(vaccine_brands.values, labels=vaccine_brands.index,
-            autopct='%1.1f%%', colors=plt.cm.Blues(np.linspace(0.3, 0.9, len(vaccine_brands))))
+            autopct='%1.1f%%',  # 顯示百分比
+            colors=plt.cm.Blues(np.linspace(0.3, 0.9, len(vaccine_brands))))  # 藍色漸層
 axes[1].set_title('疫苗品牌分布')
 
+# 儲存圖表
 plt.tight_layout()
 plt.savefig('output/疫苗分析.png', dpi=300)</code></pre>
             </div>
@@ -211,20 +221,26 @@ plt.savefig('output/疫苗分析.png', dpi=300)</code></pre>
         <div class="slide">
             <div class="content-card">
                 <h2>Step 4: AI 疫情趨勢分析</h2>
-                <pre><code>from langchain_openai import ChatOpenAI
+                <pre><code># 匯入 LangChain OpenAI 模組
+from langchain_openai import ChatOpenAI
+# 匯入提示模板類別
 from langchain_core.prompts import ChatPromptTemplate
 
+# 初始化語言模型
 llm = ChatOpenAI(model="gpt-3.5-turbo")
 
-# 準備統計摘要
+# 取得近 30 天資料
 recent_cases = cases_df.tail(30)
+# 準備統計摘要字典
 stats = {
-    "avg_daily": recent_cases['New_Cases'].mean(),
-    "max_daily": recent_cases['New_Cases'].max(),
+    "avg_daily": recent_cases['New_Cases'].mean(),  # 日均確診
+    "max_daily": recent_cases['New_Cases'].max(),   # 單日最高
+    # 判斷趨勢方向：比較移動平均線首尾
     "trend": "上升" if recent_cases['Cases_7MA'].iloc[-1] > recent_cases['Cases_7MA'].iloc[0] else "下降",
-    "vaccine_rate": vaccine_df['Coverage_Rate'].iloc[-1]
+    "vaccine_rate": vaccine_df['Coverage_Rate'].iloc[-1]  # 最新疫苗覆蓋率
 }
 
+# 建立疫情分析提示模板
 analysis_prompt = ChatPromptTemplate.from_messages([
     ("system", "你是流行病學專家，請用繁體中文提供專業分析"),
     ("human", """根據近30天疫情數據：
@@ -240,8 +256,10 @@ analysis_prompt = ChatPromptTemplate.from_messages([
 4. 防疫建議""")
 ])
 
+# 使用 LCEL 串接並執行
 chain = analysis_prompt | llm
 response = chain.invoke(stats)
+# 輸出 AI 分析結果
 print(response.content)</code></pre>
             </div>
         </div>
@@ -250,22 +268,31 @@ print(response.content)</code></pre>
         <div class="slide">
             <div class="content-card">
                 <h2>Step 5: 縣市疫情熱力圖</h2>
-                <pre><code>import seaborn as sns
+                <pre><code># 匯入 seaborn 統計視覺化套件
+import seaborn as sns
 
-# 載入各縣市數據
+# 載入各縣市確診數據 CSV
 city_cases = pd.read_csv('data/covid_by_city.csv')
 
-# 建立月份x城市熱力圖
+# 建立樞紐表：月份為列、城市為欄、數值為確診人數
 pivot = city_cases.pivot_table(values='Cases', index='Month', columns='City')
 
+# 建立畫布
 fig, ax = plt.subplots(figsize=(16, 8))
-sns.heatmap(pivot, annot=True, fmt='.0f', cmap='YlOrRd',
-            cbar_kws={'label': '確診人數'}, ax=ax)
+# 繪製熱力圖
+sns.heatmap(pivot,
+            annot=True,      # 顯示數值標籤
+            fmt='.0f',       # 整數格式
+            cmap='YlOrRd',   # 黃橘紅色彩映射（數值越高越紅）
+            cbar_kws={'label': '確診人數'},  # 色條標籤
+            ax=ax)
 
+# 設定標題和軸標籤
 ax.set_title('各縣市月確診熱力圖', fontsize=16)
 ax.set_xlabel('縣市')
 ax.set_ylabel('月份')
 
+# 儲存圖表
 plt.tight_layout()
 plt.savefig('output/縣市熱力圖.png', dpi=300)</code></pre>
                 <div class="box info">
@@ -278,22 +305,28 @@ plt.savefig('output/縣市熱力圖.png', dpi=300)</code></pre>
         <div class="slide">
             <div class="content-card">
                 <h2>Step 6: AI 自動產生防疫報告</h2>
-                <pre><code>from langchain_core.output_parsers import StrOutputParser
+                <pre><code># 匯入字串輸出解析器
+from langchain_core.output_parsers import StrOutputParser
 
 def generate_weekly_report(cases_df, vaccine_df):
-    """自動產生週報"""
-
-    # 本週數據
+    """
+    自動產生 COVID-19 週報
+    參數：cases_df=確診數據, vaccine_df=疫苗數據
+    """
+    # 取得本週和上週資料（各 7 天）
     this_week = cases_df.tail(7)
     last_week = cases_df.tail(14).head(7)
 
+    # 計算週統計數據
     weekly_stats = {
-        "this_week_total": this_week['New_Cases'].sum(),
-        "last_week_total": last_week['New_Cases'].sum(),
+        "this_week_total": this_week['New_Cases'].sum(),   # 本週總確診
+        "last_week_total": last_week['New_Cases'].sum(),   # 上週總確診
+        # 計算週變化率 = (本週-上週) / 上週 × 100%
         "change_rate": (this_week['New_Cases'].sum() - last_week['New_Cases'].sum()) / last_week['New_Cases'].sum() * 100,
-        "vaccine_rate": vaccine_df['Coverage_Rate'].iloc[-1]
+        "vaccine_rate": vaccine_df['Coverage_Rate'].iloc[-1]  # 最新疫苗覆蓋率
     }
 
+    # 建立週報生成提示模板
     report_prompt = ChatPromptTemplate.from_template(
         """產生一份簡潔的 COVID-19 週報摘要：
 
@@ -305,9 +338,12 @@ def generate_weekly_report(cases_df, vaccine_df):
 請包含：摘要、風險評估、建議措施（各1-2句話）"""
     )
 
+    # 串接鏈並使用字串輸出解析器
     chain = report_prompt | llm | StrOutputParser()
+    # 執行並回傳週報
     return chain.invoke(weekly_stats)
 
+# 呼叫函數產生週報
 report = generate_weekly_report(cases_df, vaccine_df)
 print(report)</code></pre>
             </div>

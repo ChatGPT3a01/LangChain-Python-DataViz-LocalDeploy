@@ -129,19 +129,26 @@
         <div class="slide">
             <div class="content-card">
                 <h2>Step 1: 載入社群數據</h2>
-                <pre><code>import pandas as pd
+                <pre><code># 匯入資料處理套件
+import pandas as pd
+# 匯入繪圖套件
 import matplotlib.pyplot as plt
+# 匯入統計視覺化套件
 import seaborn as sns
 
-# 載入社群媒體數據
+# 載入社群媒體貼文 CSV 數據
 df = pd.read_csv('data/social_media_posts.csv')
+# 將發文日期轉換為 datetime 格式
 df['Post_Date'] = pd.to_datetime(df['Post_Date'])
+# 提取星期幾（英文名稱）
 df['Day_of_Week'] = df['Post_Date'].dt.day_name()
+# 提取發文小時（0-23）
 df['Hour'] = df['Post_Date'].dt.hour
 
-# 計算互動率
+# 計算互動率 = (按讚 + 留言 + 分享) / 粉絲數 × 100%
 df['Engagement_Rate'] = (df['Likes'] + df['Comments'] + df['Shares']) / df['Followers'] * 100
 
+# 顯示資料概要
 print(f"貼文數量: {len(df):,}")
 print(f"內容類型: {df['Content_Type'].unique()}")
 print(f"平均互動率: {df['Engagement_Rate'].mean():.2f}%")</code></pre>
@@ -152,33 +159,36 @@ print(f"平均互動率: {df['Engagement_Rate'].mean():.2f}%")</code></pre>
         <div class="slide">
             <div class="content-card">
                 <h2>Step 2: 互動數據視覺化</h2>
-                <pre><code>fig, axes = plt.subplots(2, 2, figsize=(14, 10))
+                <pre><code># 建立 2x2 子圖佈局
+fig, axes = plt.subplots(2, 2, figsize=(14, 10))
 
-# 各類型貼文互動
+# 圖表 1：各內容類型平均互動率（由高到低排序）
 type_engagement = df.groupby('Content_Type')['Engagement_Rate'].mean().sort_values(ascending=False)
 axes[0,0].bar(type_engagement.index, type_engagement.values, color='#e84393')
 axes[0,0].set_title('各類型貼文平均互動率')
-axes[0,0].tick_params(axis='x', rotation=45)
+axes[0,0].tick_params(axis='x', rotation=45)  # X 軸標籤旋轉
 
-# 每日互動分布
+# 圖表 2：每週各日互動趨勢
 daily_engagement = df.groupby('Day_of_Week')['Engagement_Rate'].mean()
 day_order = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+# 依序取得各日平均互動率並繪製折線圖
 axes[0,1].plot([daily_engagement.get(d, 0) for d in day_order], 'o-', color='#e84393')
 axes[0,1].set_xticklabels(['一', '二', '三', '四', '五', '六', '日'])
 axes[0,1].set_title('每週互動趨勢')
 
-# 時段分析
+# 圖表 3：24 小時互動分布（面積圖）
 hourly = df.groupby('Hour')['Engagement_Rate'].mean()
-axes[1,0].fill_between(hourly.index, hourly.values, alpha=0.5, color='#fd79a8')
-axes[1,0].plot(hourly.index, hourly.values, color='#e84393')
+axes[1,0].fill_between(hourly.index, hourly.values, alpha=0.5, color='#fd79a8')  # 填滿區域
+axes[1,0].plot(hourly.index, hourly.values, color='#e84393')  # 折線
 axes[1,0].set_title('24小時互動分布')
 
-# 散佈圖
+# 圖表 4：按讚與留言關係散佈圖
 axes[1,1].scatter(df['Likes'], df['Comments'], alpha=0.5, c='#e84393')
 axes[1,1].set_xlabel('按讚數')
 axes[1,1].set_ylabel('留言數')
 axes[1,1].set_title('按讚 vs 留言關係')
 
+# 儲存圖表
 plt.tight_layout()
 plt.savefig('output/互動分析.png', dpi=300)</code></pre>
             </div>
@@ -188,28 +198,37 @@ plt.savefig('output/互動分析.png', dpi=300)</code></pre>
         <div class="slide">
             <div class="content-card">
                 <h2>Step 3: AI 情感分析</h2>
-                <pre><code>from langchain_openai import ChatOpenAI
+                <pre><code># 匯入 LangChain OpenAI 模組
+from langchain_openai import ChatOpenAI
+# 匯入提示模板類別
 from langchain_core.prompts import ChatPromptTemplate
+# 匯入 JSON 輸出解析器
 from langchain_core.output_parsers import JsonOutputParser
 
+# 初始化語言模型
 llm = ChatOpenAI(model="gpt-3.5-turbo")
 
+# 建立情感分析提示模板（指定 JSON 輸出格式）
 sentiment_prompt = ChatPromptTemplate.from_messages([
     ("system", """你是情感分析專家。分析貼文情感並輸出JSON：
 {{"sentiment": "正面/中性/負面", "score": 0-100, "keywords": ["關鍵詞"]}}"""),
     ("human", "分析這則貼文：{post}")
 ])
 
+# 初始化 JSON 解析器
 parser = JsonOutputParser()
+# 串接完整鏈：提示模板 → 語言模型 → JSON 解析
 sentiment_chain = sentiment_prompt | llm | parser
 
-# 分析貼文
+# 取得前 10 則貼文進行情感分析
 sample_posts = df['Content'].head(10)
 results = []
 
+# 迴圈分析每則貼文
 for post in sample_posts:
     result = sentiment_chain.invoke({"post": post})
     results.append(result)
+    # 輸出情感分類和分數
     print(f"情感: {result['sentiment']}, 分數: {result['score']}")</code></pre>
             </div>
         </div>
@@ -218,13 +237,15 @@ for post in sample_posts:
         <div class="slide">
             <div class="content-card">
                 <h2>Step 4: AI 留言摘要分析</h2>
-                <pre><code># 載入留言數據
+                <pre><code># 載入留言 CSV 數據
 comments_df = pd.read_csv('data/post_comments.csv')
 
-# 彙整特定貼文的留言
+# 取得第一則貼文的 ID
 post_id = df.iloc[0]['Post_ID']
+# 篩選該貼文的所有留言，轉為列表
 post_comments = comments_df[comments_df['Post_ID'] == post_id]['Comment'].tolist()
 
+# 建立留言分析提示模板
 comment_prompt = ChatPromptTemplate.from_messages([
     ("system", "你是社群分析專家，請用繁體中文分析留言"),
     ("human", """以下是一則貼文的留言：
@@ -237,8 +258,11 @@ comment_prompt = ChatPromptTemplate.from_messages([
 4. 值得關注的意見""")
 ])
 
+# 使用 LCEL 串接並執行
 chain = comment_prompt | llm
+# 取前 20 則留言合併為字串傳入
 response = chain.invoke({"comments": "\\n".join(post_comments[:20])})
+# 輸出 AI 分析結果
 print(response.content)</code></pre>
             </div>
         </div>
@@ -247,15 +271,17 @@ print(response.content)</code></pre>
         <div class="slide">
             <div class="content-card">
                 <h2>Step 5: AI 內容策略建議</h2>
-                <pre><code>from langchain_core.output_parsers import StrOutputParser
+                <pre><code># 匯入字串輸出解析器
+from langchain_core.output_parsers import StrOutputParser
 
-# 準備表現數據
+# 依內容類型分組計算平均表現數據
 performance = df.groupby('Content_Type').agg({
-    'Engagement_Rate': 'mean',
-    'Likes': 'mean',
-    'Shares': 'mean'
-}).round(2)
+    'Engagement_Rate': 'mean',  # 平均互動率
+    'Likes': 'mean',            # 平均按讚數
+    'Shares': 'mean'            # 平均分享數
+}).round(2)  # 四捨五入到小數點後2位
 
+# 建立內容策略提示模板
 strategy_prompt = ChatPromptTemplate.from_messages([
     ("system", "你是社群行銷專家，請提供具體可執行的建議"),
     ("human", """根據以下各類型貼文表現數據：
@@ -271,12 +297,15 @@ strategy_prompt = ChatPromptTemplate.from_messages([
 4. 提升互動的具體方法""")
 ])
 
+# 串接鏈並使用字串輸出解析器
 chain = strategy_prompt | llm | StrOutputParser()
+# 執行並傳入受眾與品牌調性參數
 strategy = chain.invoke({
     "performance": performance.to_string(),
     "audience": "25-35歲都會上班族",
     "tone": "專業但親切"
 })
+# 輸出 AI 策略建議
 print(strategy)</code></pre>
             </div>
         </div>
@@ -285,34 +314,43 @@ print(strategy)</code></pre>
         <div class="slide">
             <div class="content-card">
                 <h2>Step 6: AI 文案產生器</h2>
-                <pre><code>from langchain_core.pydantic_v1 import BaseModel, Field
+                <pre><code># 匯入 Pydantic 資料模型和欄位描述
+from langchain_core.pydantic_v1 import BaseModel, Field
+# 匯入型別提示
 from typing import List
 
+# 定義社群貼文輸出結構
 class SocialPost(BaseModel):
     main_text: str = Field(description="主要文案內容")
     hashtags: List[str] = Field(description="推薦標籤")
     call_to_action: str = Field(description="行動呼籲")
     best_time: str = Field(description="建議發布時間")
 
+# 匯入 Pydantic 輸出解析器
 from langchain.output_parsers import PydanticOutputParser
 
+# 建立解析器（綁定 SocialPost 結構）
 post_parser = PydanticOutputParser(pydantic_object=SocialPost)
 
+# 建立文案產生提示模板
 copywriting_prompt = ChatPromptTemplate.from_messages([
     ("system", """你是社群文案專家。為品牌產生吸引人的貼文。
 {format_instructions}"""),
     ("human", "品牌：{brand}\\n產品：{product}\\n目標：{goal}")
 ])
 
+# 串接完整鏈：提示模板 → 語言模型 → Pydantic 解析
 copy_chain = copywriting_prompt | llm | post_parser
 
+# 執行文案產生
 result = copy_chain.invoke({
     "brand": "健康生活館",
     "product": "有機蔬果箱",
     "goal": "提升訂閱數",
-    "format_instructions": post_parser.get_format_instructions()
+    "format_instructions": post_parser.get_format_instructions()  # 自動產生格式說明
 })
 
+# 輸出結構化結果
 print(f"文案：{result.main_text}")
 print(f"標籤：{' '.join(['#'+tag for tag in result.hashtags])}")
 print(f"CTA：{result.call_to_action}")</code></pre>

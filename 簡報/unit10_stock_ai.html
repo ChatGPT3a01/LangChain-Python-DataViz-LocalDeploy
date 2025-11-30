@@ -129,26 +129,32 @@
         <div class="slide">
             <div class="content-card">
                 <h2>Step 1: 載入股市數據</h2>
-                <pre><code>import pandas as pd
+                <pre><code># 匯入資料處理套件
+import pandas as pd
+# 匯入繪圖套件
 import matplotlib.pyplot as plt
+# 匯入股票 K 線繪圖套件
 import mplfinance as mpf
 
-# 載入股票數據
+# 載入台積電股票 CSV 數據
 df = pd.read_csv('data/tw_stock_2330.csv')
+# 將日期轉換為 datetime 格式
 df['Date'] = pd.to_datetime(df['Date'])
+# 將日期設為索引（mplfinance 需要）
 df.set_index('Date', inplace=True)
 
-# 計算技術指標
-df['MA5'] = df['Close'].rolling(window=5).mean()
-df['MA20'] = df['Close'].rolling(window=20).mean()
-df['MA60'] = df['Close'].rolling(window=60).mean()
+# 計算移動平均線（MA = Moving Average）
+df['MA5'] = df['Close'].rolling(window=5).mean()    # 5日均線
+df['MA20'] = df['Close'].rolling(window=20).mean()  # 20日均線
+df['MA60'] = df['Close'].rolling(window=60).mean()  # 60日均線
 
-# 計算 RSI
-delta = df['Close'].diff()
-gain = (delta.where(delta > 0, 0)).rolling(window=14).mean()
-loss = (-delta.where(delta < 0, 0)).rolling(window=14).mean()
-df['RSI'] = 100 - (100 / (1 + gain / loss))
+# 計算 RSI（相對強弱指標，判斷超買超賣）
+delta = df['Close'].diff()  # 計算每日價格變化
+gain = (delta.where(delta > 0, 0)).rolling(window=14).mean()  # 14日平均漲幅
+loss = (-delta.where(delta < 0, 0)).rolling(window=14).mean() # 14日平均跌幅
+df['RSI'] = 100 - (100 / (1 + gain / loss))  # RSI 公式
 
+# 顯示資料概要
 print(f"股票：台積電 (2330)")
 print(f"時間範圍: {df.index.min()} ~ {df.index.max()}")
 print(f"最新收盤價: {df['Close'].iloc[-1]}")</code></pre>
@@ -159,24 +165,27 @@ print(f"最新收盤價: {df['Close'].iloc[-1]}")</code></pre>
         <div class="slide">
             <div class="content-card">
                 <h2>Step 2: K線圖繪製</h2>
-                <pre><code>import mplfinance as mpf
+                <pre><code># 匯入股票 K 線繪圖套件
+import mplfinance as mpf
 
-# 準備 K 線數據（最近60個交易日）
+# 取得最近 60 個交易日資料繪製 K 線
 kline_data = df.tail(60).copy()
 
-# 設定均線
+# 設定額外繪製的線條（均線和 RSI）
 add_plots = [
-    mpf.make_addplot(kline_data['MA5'], color='blue', width=1),
-    mpf.make_addplot(kline_data['MA20'], color='orange', width=1),
-    mpf.make_addplot(kline_data['RSI'], panel=1, color='purple', ylabel='RSI')
+    mpf.make_addplot(kline_data['MA5'], color='blue', width=1),      # 5日均線（藍色）
+    mpf.make_addplot(kline_data['MA20'], color='orange', width=1),   # 20日均線（橘色）
+    mpf.make_addplot(kline_data['RSI'], panel=1, color='purple', ylabel='RSI')  # RSI 副圖
 ]
 
 # 繪製 K 線圖
-mpf.plot(kline_data, type='candle', style='yahoo',
+mpf.plot(kline_data,
+         type='candle',       # 蠟燭圖類型
+         style='yahoo',       # Yahoo Finance 風格
          title='台積電 (2330) K線圖',
          ylabel='股價',
-         volume=True,
-         addplot=add_plots,
+         volume=True,         # 顯示成交量
+         addplot=add_plots,   # 加入均線和 RSI
          figsize=(14, 10),
          savefig='output/K線圖.png')</code></pre>
                 <div class="box info">
@@ -189,31 +198,33 @@ mpf.plot(kline_data, type='candle', style='yahoo',
         <div class="slide">
             <div class="content-card">
                 <h2>Step 3: 技術指標視覺化</h2>
-                <pre><code>fig, axes = plt.subplots(3, 1, figsize=(14, 12), sharex=True)
+                <pre><code># 建立 3x1 垂直子圖佈局，共用 X 軸
+fig, axes = plt.subplots(3, 1, figsize=(14, 12), sharex=True)
 
-# 股價與均線
+# 上圖：股價走勢與三條均線
 axes[0].plot(df.index, df['Close'], label='收盤價', linewidth=1.5)
-axes[0].plot(df.index, df['MA5'], label='MA5', alpha=0.7)
-axes[0].plot(df.index, df['MA20'], label='MA20', alpha=0.7)
-axes[0].plot(df.index, df['MA60'], label='MA60', alpha=0.7)
+axes[0].plot(df.index, df['MA5'], label='MA5', alpha=0.7)    # 5日均線
+axes[0].plot(df.index, df['MA20'], label='MA20', alpha=0.7)  # 20日均線
+axes[0].plot(df.index, df['MA60'], label='MA60', alpha=0.7)  # 60日均線
 axes[0].set_title('股價走勢與均線')
 axes[0].legend()
 axes[0].grid(True, alpha=0.3)
 
-# 成交量
+# 中圖：成交量長條圖（紅漲綠跌）
 colors = ['red' if df['Close'].iloc[i] >= df['Open'].iloc[i] else 'green'
-          for i in range(len(df))]
+          for i in range(len(df))]  # 根據漲跌決定顏色
 axes[1].bar(df.index, df['Volume'], color=colors, alpha=0.7)
 axes[1].set_title('成交量')
 
-# RSI
+# 下圖：RSI 相對強弱指標
 axes[2].plot(df.index, df['RSI'], color='purple')
-axes[2].axhline(y=70, color='r', linestyle='--', alpha=0.5)
-axes[2].axhline(y=30, color='g', linestyle='--', alpha=0.5)
-axes[2].fill_between(df.index, 30, 70, alpha=0.1)
+axes[2].axhline(y=70, color='r', linestyle='--', alpha=0.5)  # 超買線（70）
+axes[2].axhline(y=30, color='g', linestyle='--', alpha=0.5)  # 超賣線（30）
+axes[2].fill_between(df.index, 30, 70, alpha=0.1)  # 正常區間填色
 axes[2].set_title('RSI 指標')
 axes[2].set_ylim(0, 100)
 
+# 儲存圖表
 plt.tight_layout()
 plt.savefig('output/技術分析.png', dpi=300)</code></pre>
             </div>
@@ -223,23 +234,29 @@ plt.savefig('output/技術分析.png', dpi=300)</code></pre>
         <div class="slide">
             <div class="content-card">
                 <h2>Step 4: AI 技術面分析</h2>
-                <pre><code>from langchain_openai import ChatOpenAI
+                <pre><code># 匯入 LangChain OpenAI 模組
+from langchain_openai import ChatOpenAI
+# 匯入提示模板類別
 from langchain_core.prompts import ChatPromptTemplate
 
+# 初始化語言模型
 llm = ChatOpenAI(model="gpt-3.5-turbo")
 
-# 準備技術指標數據
+# 取得最新一筆資料
 latest = df.iloc[-1]
+# 準備技術指標數據字典
 stats = {
-    "close": latest['Close'],
-    "ma5": latest['MA5'],
-    "ma20": latest['MA20'],
-    "ma60": latest['MA60'],
-    "rsi": latest['RSI'],
-    "volume": latest['Volume'],
+    "close": latest['Close'],      # 收盤價
+    "ma5": latest['MA5'],          # 5日均線
+    "ma20": latest['MA20'],        # 20日均線
+    "ma60": latest['MA60'],        # 60日均線
+    "rsi": latest['RSI'],          # RSI 值
+    "volume": latest['Volume'],    # 成交量
+    # 計算日漲跌幅 = (今收 - 昨收) / 昨收 × 100%
     "change": (latest['Close'] - df.iloc[-2]['Close']) / df.iloc[-2]['Close'] * 100
 }
 
+# 建立技術分析提示模板
 analysis_prompt = ChatPromptTemplate.from_messages([
     ("system", "你是專業股票分析師，請用繁體中文提供技術面分析。注意：這僅供教學參考，不構成投資建議。"),
     ("human", """台積電 (2330) 最新數據：
@@ -257,8 +274,10 @@ analysis_prompt = ChatPromptTemplate.from_messages([
 4. 關鍵支撐/壓力位""")
 ])
 
+# 使用 LCEL 串接並執行
 chain = analysis_prompt | llm
 response = chain.invoke(stats)
+# 輸出 AI 技術分析結果
 print(response.content)</code></pre>
             </div>
         </div>
@@ -267,37 +286,46 @@ print(response.content)</code></pre>
         <div class="slide">
             <div class="content-card">
                 <h2>Step 5: AI 產業比較分析</h2>
-                <pre><code>from langchain_core.output_parsers import JsonOutputParser
+                <pre><code># 匯入 JSON 輸出解析器
+from langchain_core.output_parsers import JsonOutputParser
 
-# 載入多檔股票
+# 定義要比較的股票清單（股票代碼: 公司名稱）
 stocks = {
     '2330': '台積電',
     '2317': '鴻海',
     '2454': '聯發科'
 }
 
+# 收集各股票的比較數據
 comparison_data = []
 for code, name in stocks.items():
+    # 載入各股票 CSV 數據
     stock_df = pd.read_csv(f'data/tw_stock_{code}.csv')
     stock_df['Date'] = pd.to_datetime(stock_df['Date'])
-    latest = stock_df.iloc[-1]
+    latest = stock_df.iloc[-1]  # 取得最新資料
     comparison_data.append({
         "code": code,
         "name": name,
         "price": latest['Close'],
+        # 計算近一個月漲跌幅（約22個交易日）
         "change_30d": (latest['Close'] - stock_df.iloc[-22]['Close']) / stock_df.iloc[-22]['Close'] * 100
     })
 
+# 建立產業比較提示模板（指定 JSON 輸出格式）
 compare_prompt = ChatPromptTemplate.from_messages([
     ("system", """你是半導體產業分析師。比較股票並輸出JSON：
 {{"ranking": ["股票代碼"], "analysis": "分析說明", "top_pick": "首選股票"}}"""),
     ("human", "比較以下股票近月表現：\\n{data}")
 ])
 
+# 初始化 JSON 解析器
 parser = JsonOutputParser()
+# 串接完整鏈：提示模板 → 語言模型 → JSON 解析
 compare_chain = compare_prompt | llm | parser
 
+# 執行比較分析
 result = compare_chain.invoke({"data": str(comparison_data)})
+# 輸出排名和分析結果
 print(f"排名: {result['ranking']}")
 print(f"分析: {result['analysis']}")</code></pre>
             </div>
@@ -307,9 +335,12 @@ print(f"分析: {result['analysis']}")</code></pre>
         <div class="slide">
             <div class="content-card">
                 <h2>Step 6: AI 投資策略建議</h2>
-                <pre><code>from langchain_core.pydantic_v1 import BaseModel, Field
+                <pre><code># 匯入 Pydantic 資料模型和欄位描述
+from langchain_core.pydantic_v1 import BaseModel, Field
+# 匯入型別提示
 from typing import List
 
+# 定義投資建議輸出結構
 class InvestmentAdvice(BaseModel):
     action: str = Field(description="建議動作：買入/賣出/觀望")
     confidence: int = Field(description="信心度 0-100")
@@ -317,10 +348,13 @@ class InvestmentAdvice(BaseModel):
     risk_level: str = Field(description="風險等級：低/中/高")
     target_price: float = Field(description="目標價位")
 
+# 匯入 Pydantic 輸出解析器
 from langchain.output_parsers import PydanticOutputParser
 
+# 建立解析器（綁定 InvestmentAdvice 結構）
 advice_parser = PydanticOutputParser(pydantic_object=InvestmentAdvice)
 
+# 建立投資建議提示模板
 advice_prompt = ChatPromptTemplate.from_messages([
     ("system", """你是投資顧問。根據技術指標提供建議（僅供教學參考）。
 {format_instructions}"""),
@@ -330,16 +364,19 @@ RSI：{rsi}
 均線位置：股價{"高於" if {above_ma} else "低於"}20日均線""")
 ])
 
+# 串接完整鏈：提示模板 → 語言模型 → Pydantic 解析
 advice_chain = advice_prompt | llm | advice_parser
 
+# 執行投資建議分析
 result = advice_chain.invoke({
     "stock": "台積電 (2330)",
     "price": latest['Close'],
     "rsi": latest['RSI'],
-    "above_ma": latest['Close'] > latest['MA20'],
-    "format_instructions": advice_parser.get_format_instructions()
+    "above_ma": latest['Close'] > latest['MA20'],  # 判斷是否高於20日均線
+    "format_instructions": advice_parser.get_format_instructions()  # 自動產生格式說明
 })
 
+# 輸出結構化投資建議
 print(f"建議：{result.action}")
 print(f"信心度：{result.confidence}%")
 print(f"風險：{result.risk_level}")
