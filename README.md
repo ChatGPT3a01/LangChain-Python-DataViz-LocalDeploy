@@ -1,4 +1,4 @@
-# Python 資料視覺化與 AI 專案開發
+# LangChain-Python-數據圖像化地端佈署
 
 > LangChain + 實戰專案完整教學
 
