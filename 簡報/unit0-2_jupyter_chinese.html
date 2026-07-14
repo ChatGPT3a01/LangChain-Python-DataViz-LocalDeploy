@@ -1570,7 +1570,7 @@ client = OpenAI(api_key=<span class="code-string">"你的-API-KEY"</span>)
 <span class="code-comment"># 發送訊息給 AI</span>
 <span class="code-keyword">def</span> <span class="code-function">chat</span>(message):
     response = client.chat.completions.create(
-        model=<span class="code-string">"gpt-3.5-turbo"</span>,
+        model=<span class="code-string">"gpt-5.6-luna"</span>,
         messages=[
             {<span class="code-string">"role"</span>: <span class="code-string">"system"</span>, 
              <span class="code-string">"content"</span>: <span class="code-string">"你是一個友善的中文助手"</span>},
@@ -1626,7 +1626,7 @@ conversation_history = [
     
     <span class="code-comment"># 發送請求</span>
     response = client.chat.completions.create(
-        model=<span class="code-string">"gpt-3.5-turbo"</span>,
+        model=<span class="code-string">"gpt-5.6-luna"</span>,
         messages=conversation_history
     )
     
@@ -1687,7 +1687,7 @@ client = OpenAI(api_key=<span class="code-string">"你的-API-KEY"</span>)
     """</span>
     
     response = client.chat.completions.create(
-        model=<span class="code-string">"gpt-3.5-turbo"</span>,
+        model=<span class="code-string">"gpt-5.6-luna"</span>,
         messages=[
             {<span class="code-string">"role"</span>: <span class="code-string">"system"</span>, 
              <span class="code-string">"content"</span>: <span class="code-string">"你是專業的程式設計師"</span>},
@@ -1752,7 +1752,7 @@ client = OpenAI(api_key=<span class="code-string">"你的-API-KEY"</span>)
     """</span>
     
     response = client.chat.completions.create(
-        model=<span class="code-string">"gpt-3.5-turbo"</span>,
+        model=<span class="code-string">"gpt-5.6-luna"</span>,
         messages=[
             {<span class="code-string">"role"</span>: <span class="code-string">"system"</span>, 
              <span class="code-string">"content"</span>: <span class="code-string">"你是資料分析專家,精通 Pandas"</span>},

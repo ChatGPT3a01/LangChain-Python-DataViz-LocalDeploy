@@ -16,7 +16,7 @@ def main():
 
     # 建立 ChatOpenAI 實例
     llm = ChatOpenAI(
-        model="gpt-3.5-turbo",
+        model="gpt-5.6-luna",
         temperature=0.7
     )
 
@@ -38,12 +38,12 @@ def main():
     print("\n[方法三] 調整 temperature 參數:")
 
     # 低溫度 - 較為確定的回答
-    llm_low = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
+    llm_low = ChatOpenAI(model="gpt-5.6-luna", temperature=0)
     response_low = llm_low.invoke("1+1=?")
     print(f"低溫度 (0): {response_low.content}")
 
     # 高溫度 - 較為創意的回答
-    llm_high = ChatOpenAI(model="gpt-3.5-turbo", temperature=1)
+    llm_high = ChatOpenAI(model="gpt-5.6-luna", temperature=1)
     response_high = llm_high.invoke("寫一句有趣的開場白")
     print(f"高溫度 (1): {response_high.content}")
 

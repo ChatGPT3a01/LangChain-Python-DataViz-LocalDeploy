@@ -32,7 +32,7 @@ def main():
     print("Unit 3: LangChain 輸出解析器")
     print("=" * 50)
 
-    llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0.7)
+    llm = ChatOpenAI(model="gpt-5.6-luna", temperature=0.7)
 
     # ===== StrOutputParser =====
     print("\n[1] StrOutputParser - 字串輸出:")

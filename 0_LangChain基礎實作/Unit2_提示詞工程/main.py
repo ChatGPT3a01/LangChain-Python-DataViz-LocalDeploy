@@ -14,7 +14,7 @@ def main():
     print("Unit 2: LangChain 提示詞工程")
     print("=" * 50)
 
-    llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0.7)
+    llm = ChatOpenAI(model="gpt-5.6-luna", temperature=0.7)
 
     # ===== 基礎 PromptTemplate =====
     print("\n[1] 基礎 PromptTemplate:")

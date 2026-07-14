@@ -229,7 +229,7 @@ load_dotenv()
 
 # 建立 ChatOpenAI 語言模型實例
 llm = ChatOpenAI(
-    model="gpt-3.5-turbo",   # 使用 GPT-3.5-turbo 模型
+    model="gpt-5.6-luna",   # 使用 GPT-5.6 Luna 模型
     temperature=0.7           # 設定創意程度（0=保守，1=創意）
 )
 
@@ -279,7 +279,7 @@ from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 
 # 建立語言模型實例
-llm = ChatOpenAI(model="gpt-3.5-turbo")
+llm = ChatOpenAI(model="gpt-5.6-luna")
 
 # 建立對話歷史列表（包含角色設定和第一個問題）
 messages = [
